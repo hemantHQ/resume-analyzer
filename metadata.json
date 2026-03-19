@@ -1,0 +1,5 @@
+{
+  "name": "Resume Analyzer",
+  "description": "AI-powered resume analyzer that checks for missing keywords, skill match, and provides a score based on a job description.",
+  "requestFramePermissions": []
+}
