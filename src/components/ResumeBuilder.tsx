@@ -43,9 +43,9 @@ export function ResumeBuilder() {
     const opt = {
       margin: 0.5,
       filename: `${name.replace(/\s+/g, '_')}_Resume.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: 'jpeg' as const, quality: 0.98 },
       html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' as const }
     };
 
     html2pdf().set(opt).from(element).save();
@@ -67,15 +67,15 @@ export function ResumeBuilder() {
   if (profile?.tier === 'free') {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12">
-          <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 transition-colors duration-200">
+          <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Pro Feature Locked</h2>
-          <p className="text-slate-600 mb-8 max-w-md mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">Pro Feature Locked</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto">
             Upgrade to Pro to unlock the Resume Builder. Generate, customize, and download ATS-friendly PDF resumes directly from the app.
           </p>
-          <button onClick={handleUpgrade} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-sm transition-all">
+          <button onClick={handleUpgrade} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-medium shadow-sm transition-all">
             Upgrade to Pro (Test)
           </button>
         </div>
@@ -86,12 +86,12 @@ export function ResumeBuilder() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
       {/* Left Column: Editor */}
-      <div className="space-y-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-[80vh] overflow-y-auto">
+      <div className="space-y-6 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 h-[80vh] overflow-y-auto transition-colors duration-200">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-slate-900">Resume Builder</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Resume Builder</h2>
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-sm"
           >
             <Download className="w-4 h-4 mr-2" />
             Download PDF
@@ -99,73 +99,73 @@ export function ResumeBuilder() {
         </div>
 
         <div className="space-y-4">
-          <h3 className="font-semibold text-slate-800 border-b pb-2">Personal Info</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2">Personal Info</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">Full Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full p-2 border rounded-lg text-sm" />
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Full Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-2 border rounded-lg text-sm" />
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
-              <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-2 border rounded-lg text-sm" />
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Phone</label>
+              <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
             </div>
           </div>
 
-          <h3 className="font-semibold text-slate-800 border-b pb-2 mt-6">Professional Summary</h3>
-          <textarea value={summary} onChange={e => setSummary(e.target.value)} className="w-full p-2 border rounded-lg text-sm h-24" />
+          <h3 className="font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2 mt-6">Professional Summary</h3>
+          <textarea value={summary} onChange={e => setSummary(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm h-24 focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
 
-          <h3 className="font-semibold text-slate-800 border-b pb-2 mt-6">Skills (comma separated)</h3>
-          <input type="text" value={skills} onChange={e => setSkills(e.target.value)} className="w-full p-2 border rounded-lg text-sm" />
+          <h3 className="font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2 mt-6">Skills (comma separated)</h3>
+          <input type="text" value={skills} onChange={e => setSkills(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
 
-          <div className="flex justify-between items-center border-b pb-2 mt-6">
-            <h3 className="font-semibold text-slate-800">Experience</h3>
+          <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2 mt-6">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200">Experience</h3>
             <button 
               onClick={() => setExperience([...experience, { company: '', role: '', duration: '', description: '' }])}
-              className="text-xs text-indigo-600 flex items-center hover:text-indigo-800"
+              className="text-xs text-indigo-600 dark:text-indigo-400 flex items-center hover:text-indigo-800 dark:hover:text-indigo-300"
             >
               <Plus className="w-3 h-3 mr-1" /> Add
             </button>
           </div>
           {experience.map((exp, i) => (
-            <div key={i} className="space-y-2 p-4 bg-slate-50 rounded-lg relative">
-              <button onClick={() => setExperience(experience.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 text-red-500 hover:text-red-700">
+            <div key={i} className="space-y-2 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg relative border border-slate-100 dark:border-slate-700/50">
+              <button onClick={() => setExperience(experience.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 text-red-500 hover:text-red-700 dark:hover:text-red-400">
                 <Trash2 className="w-4 h-4" />
               </button>
-              <input placeholder="Company" value={exp.company} onChange={e => { const newExp = [...experience]; newExp[i].company = e.target.value; setExperience(newExp); }} className="w-full p-2 border rounded-lg text-sm" />
-              <input placeholder="Role" value={exp.role} onChange={e => { const newExp = [...experience]; newExp[i].role = e.target.value; setExperience(newExp); }} className="w-full p-2 border rounded-lg text-sm" />
-              <input placeholder="Duration (e.g. 2020 - Present)" value={exp.duration} onChange={e => { const newExp = [...experience]; newExp[i].duration = e.target.value; setExperience(newExp); }} className="w-full p-2 border rounded-lg text-sm" />
-              <textarea placeholder="Description" value={exp.description} onChange={e => { const newExp = [...experience]; newExp[i].description = e.target.value; setExperience(newExp); }} className="w-full p-2 border rounded-lg text-sm h-20" />
+              <input placeholder="Company" value={exp.company} onChange={e => { const newExp = [...experience]; newExp[i].company = e.target.value; setExperience(newExp); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
+              <input placeholder="Role" value={exp.role} onChange={e => { const newExp = [...experience]; newExp[i].role = e.target.value; setExperience(newExp); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
+              <input placeholder="Duration (e.g. 2020 - Present)" value={exp.duration} onChange={e => { const newExp = [...experience]; newExp[i].duration = e.target.value; setExperience(newExp); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
+              <textarea placeholder="Description" value={exp.description} onChange={e => { const newExp = [...experience]; newExp[i].description = e.target.value; setExperience(newExp); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm h-20 focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
             </div>
           ))}
 
-          <div className="flex justify-between items-center border-b pb-2 mt-6">
-            <h3 className="font-semibold text-slate-800">Education</h3>
+          <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2 mt-6">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200">Education</h3>
             <button 
               onClick={() => setEducation([...education, { school: '', degree: '', year: '' }])}
-              className="text-xs text-indigo-600 flex items-center hover:text-indigo-800"
+              className="text-xs text-indigo-600 dark:text-indigo-400 flex items-center hover:text-indigo-800 dark:hover:text-indigo-300"
             >
               <Plus className="w-3 h-3 mr-1" /> Add
             </button>
           </div>
           {education.map((edu, i) => (
-            <div key={i} className="space-y-2 p-4 bg-slate-50 rounded-lg relative">
-              <button onClick={() => setEducation(education.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 text-red-500 hover:text-red-700">
+            <div key={i} className="space-y-2 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg relative border border-slate-100 dark:border-slate-700/50">
+              <button onClick={() => setEducation(education.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 text-red-500 hover:text-red-700 dark:hover:text-red-400">
                 <Trash2 className="w-4 h-4" />
               </button>
-              <input placeholder="School" value={edu.school} onChange={e => { const newEdu = [...education]; newEdu[i].school = e.target.value; setEducation(newEdu); }} className="w-full p-2 border rounded-lg text-sm" />
-              <input placeholder="Degree" value={edu.degree} onChange={e => { const newEdu = [...education]; newEdu[i].degree = e.target.value; setEducation(newEdu); }} className="w-full p-2 border rounded-lg text-sm" />
-              <input placeholder="Year" value={edu.year} onChange={e => { const newEdu = [...education]; newEdu[i].year = e.target.value; setEducation(newEdu); }} className="w-full p-2 border rounded-lg text-sm" />
+              <input placeholder="School" value={edu.school} onChange={e => { const newEdu = [...education]; newEdu[i].school = e.target.value; setEducation(newEdu); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
+              <input placeholder="Degree" value={edu.degree} onChange={e => { const newEdu = [...education]; newEdu[i].degree = e.target.value; setEducation(newEdu); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
+              <input placeholder="Year" value={edu.year} onChange={e => { const newEdu = [...education]; newEdu[i].year = e.target.value; setEducation(newEdu); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" />
             </div>
           ))}
         </div>
       </div>
 
       {/* Right Column: Preview */}
-      <div className="bg-slate-200 p-8 rounded-2xl flex justify-center overflow-y-auto h-[80vh]">
+      <div className="bg-slate-200 dark:bg-slate-900 p-8 rounded-2xl flex justify-center overflow-y-auto h-[80vh] transition-colors duration-200">
         <div 
           ref={resumeRef} 
           className="bg-white w-[8.5in] min-h-[11in] p-10 shadow-lg text-slate-900 font-sans"

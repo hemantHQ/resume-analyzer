@@ -32,26 +32,22 @@ export interface AnalysisResult {
 export async function analyzeResume(
   fileBase64: string,
   mimeType: string,
-  jobDescription: string,
   isPro: boolean = false
 ): Promise<AnalysisResult> {
   const prompt = isPro 
     ? `You are an expert technical recruiter and resume analyzer.
 I have attached a candidate's resume.
-Analyze the resume against the following Job Description and provide:
-1. An overall match score (0-100).
-2. A match percentage vs the job description.
+Analyze the resume and provide:
+1. An overall resume quality score (0-100).
+2. An industry match percentage (how well it fits standard industry expectations).
 3. A list of detected skills in the resume.
-4. A list of missing skills (critical skills or requirements in the JD that are missing from the resume).
+4. A list of recommended missing skills (critical skills that are typically expected but missing).
 5. A list of extracted keywords from the resume.
 6. Basic suggestions for improvement.
 7. Advanced AI suggestions (rewrite/improve content), providing the section, original text, and improved text.
 8. Section-wise scoring (e.g., Experience, Education, Skills) with a score (0-100) and feedback for each.
 9. ATS compatibility check with a score (0-100), feedback, and a list of issues.
-10. Tell which websites are best to apply for this specific job (provide name, url, and reason).
-
-Job Description:
-${jobDescription}`
+10. Tell which websites or job boards are best to apply for based on this resume (provide name, url, and reason).`
     : `You are an expert technical recruiter and resume analyzer.
 I have attached a candidate's resume.
 Analyze the resume and provide:
@@ -73,7 +69,7 @@ Analyze the resume and provide:
     const requiredFields = ["score", "detectedSkills", "extractedKeywords", "suggestions"];
 
     if (isPro) {
-      schemaProperties.matchPercentage = { type: Type.NUMBER, description: "Match percentage vs job description" };
+      schemaProperties.matchPercentage = { type: Type.NUMBER, description: "Industry match percentage" };
       schemaProperties.missingSkills = { type: Type.ARRAY, items: { type: Type.STRING }, description: "Important skills missing from the resume" };
       schemaProperties.advancedSuggestions = { 
         type: Type.ARRAY, 

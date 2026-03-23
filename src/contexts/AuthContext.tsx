@@ -38,17 +38,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         try {
           const docSnap = await getDoc(userRef);
+          const isAdmin = firebaseUser.email === 'hk450203@gmail.com';
+          
           if (!docSnap.exists()) {
             const newProfile: UserProfile = {
               uid: firebaseUser.uid,
               email: firebaseUser.email || '',
               displayName: firebaseUser.displayName || '',
-              role: 'user',
-              tier: 'free',
+              role: isAdmin ? 'admin' : 'user',
+              tier: isAdmin ? 'pro' : 'free',
               usageCount: 0,
               createdAt: new Date().toISOString(),
             };
             await setDoc(userRef, newProfile);
+          } else {
+            const data = docSnap.data() as UserProfile;
+            if (isAdmin && (data.role !== 'admin' || data.tier !== 'pro')) {
+              await updateDoc(userRef, { role: 'admin', tier: 'pro' });
+            }
           }
         } catch (error) {
           console.error("Error creating user profile", error);
