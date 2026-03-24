@@ -113,7 +113,7 @@ export function Pricing() {
           <div className="mb-6">
             <h3 className="text-2xl font-bold text-indigo-900 dark:text-indigo-300">Pro</h3>
             <div className="mt-4 flex items-baseline text-5xl font-extrabold text-indigo-900 dark:text-white">
-              ₹200
+              ₹199
               <span className="ml-1 text-xl font-medium text-indigo-500 dark:text-indigo-400">/mo</span>
             </div>
             <p className="mt-4 text-indigo-700 dark:text-indigo-400/80">
