@@ -40,6 +40,12 @@ export default function App() {
     }
   }, []);
 
+  useEffect(() => {
+    if (user && activeTab === 'analyze' && !file) {
+      setActiveTab('dashboard');
+    }
+  }, [user]);
+
   const handleAnalyze = async () => {
     if (!user || !profile) {
       await signInWithGoogle();
@@ -120,15 +126,6 @@ export default function App() {
           </div>
           
           <div className="hidden md:flex items-center justify-center space-x-1">
-            <button
-              onClick={() => setActiveTab('analyze')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'analyze' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 inline-block mr-2" />
-              Analyze
-            </button>
             {user && (
               <button
                 onClick={() => setActiveTab('dashboard')}
@@ -138,9 +135,17 @@ export default function App() {
               >
                 <BarChart3 className="w-4 h-4 inline-block mr-2" />
                 Dashboard
-                {profile?.tier === 'free' && <Lock className="w-3 h-3 inline-block ml-2 text-slate-400 dark:text-slate-500" />}
               </button>
             )}
+            <button
+              onClick={() => setActiveTab('analyze')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'analyze' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 inline-block mr-2" />
+              Analyze
+            </button>
             <button
               onClick={() => setActiveTab('builder')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -149,7 +154,6 @@ export default function App() {
             >
               <FileEdit className="w-4 h-4 inline-block mr-2" />
               Builder
-              {(!user || profile?.tier === 'free') && <Lock className="w-3 h-3 inline-block ml-2 text-slate-400 dark:text-slate-500" />}
             </button>
             <button
               onClick={() => setActiveTab('pricing')}
@@ -253,7 +257,7 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <ResumeBuilder />
+            <ResumeBuilder onNavigateToPricing={() => setActiveTab('pricing')} />
           )
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

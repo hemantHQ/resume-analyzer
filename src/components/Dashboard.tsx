@@ -35,44 +35,12 @@ export function Dashboard() {
       }
     }
     
-    if (profile?.tier === 'pro') {
+    if (user) {
       fetchHistory();
     } else {
       setLoading(false);
     }
   }, [user, profile]);
-
-  const handleUpgrade = async () => {
-    if (!user) return;
-    try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        tier: 'pro'
-      });
-      alert('Successfully upgraded to Pro! Enjoy the new features.');
-    } catch (error) {
-      console.error('Error upgrading:', error);
-      alert('Failed to upgrade.');
-    }
-  };
-
-  if (profile?.tier === 'free') {
-    return (
-      <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 transition-colors duration-200">
-          <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">Pro Feature Locked</h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto">
-            Upgrade to Pro to unlock detailed analytics, track your resume improvement over time, and view your complete analysis history.
-          </p>
-          <button onClick={handleUpgrade} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-medium shadow-sm transition-all">
-            Upgrade to Pro (Test)
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return <div className="text-center py-20 text-slate-500 dark:text-slate-400">Loading dashboard...</div>;
