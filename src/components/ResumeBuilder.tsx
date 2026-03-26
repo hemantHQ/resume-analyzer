@@ -172,8 +172,8 @@ export function ResumeBuilder({ onNavigateToPricing, initialData }: { onNavigate
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
       {/* Left Column: Editor */}
-      <div className="space-y-6 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 h-[80vh] overflow-y-auto custom-scrollbar transition-colors duration-200">
-        <div className="flex justify-between items-center mb-6 sticky top-0 bg-white dark:bg-slate-800 py-2 z-10 border-b border-slate-200 dark:border-slate-700">
+      <div className="space-y-6 bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 h-[60vh] lg:h-[80vh] overflow-y-auto custom-scrollbar transition-colors duration-200">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sticky top-0 bg-white dark:bg-slate-800 py-2 z-10 border-b border-slate-200 dark:border-slate-700 gap-4">
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Resume Builder</h2>
           <button
             onClick={handleDownloadPDF}
@@ -206,7 +206,7 @@ export function ResumeBuilder({ onNavigateToPricing, initialData }: { onNavigate
           {/* Personal Info */}
           <div>
             <h3 className="font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2">Personal Info</h3>
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Full Name</label>
                 <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
@@ -296,10 +296,10 @@ export function ResumeBuilder({ onNavigateToPricing, initialData }: { onNavigate
             {!isFresher && experience.map((exp, i) => (
               <div key={i} className="space-y-3 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 mb-4 relative">
                 <button onClick={() => removeExperience(i)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                <div className="grid grid-cols-2 gap-4 pr-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pr-8">
                   <input type="text" placeholder="Company" value={exp.company} onChange={e => updateExperience(i, 'company', e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
                   <input type="text" placeholder="Role" value={exp.role} onChange={e => updateExperience(i, 'role', e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
-                  <input type="text" placeholder="Duration (e.g. 2020 - Present)" value={exp.duration} onChange={e => updateExperience(i, 'duration', e.target.value)} className="col-span-2 w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <input type="text" placeholder="Duration (e.g. 2020 - Present)" value={exp.duration} onChange={e => updateExperience(i, 'duration', e.target.value)} className="sm:col-span-2 w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
                 </div>
                 <RichInput value={exp.description} onChange={(v) => updateExperience(i, 'description', v)} />
               </div>
@@ -317,11 +317,11 @@ export function ResumeBuilder({ onNavigateToPricing, initialData }: { onNavigate
               )}
             </div>
             {education.map((edu, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 mb-3 items-center">
-                <input type="text" placeholder="School/University" value={edu.school} onChange={e => updateEducation(i, 'school', e.target.value)} className="col-span-5 p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
-                <input type="text" placeholder="Degree" value={edu.degree} onChange={e => updateEducation(i, 'degree', e.target.value)} className="col-span-4 p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
-                <input type="text" placeholder="Year" value={edu.year} onChange={e => updateEducation(i, 'year', e.target.value)} className="col-span-2 p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
-                <button onClick={() => removeEducation(i)} className="col-span-1 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex justify-center"><Trash2 className="w-4 h-4" /></button>
+              <div key={i} className="grid grid-cols-1 sm:grid-cols-12 gap-2 mb-3 items-start sm:items-center relative pr-8 sm:pr-0">
+                <input type="text" placeholder="School/University" value={edu.school} onChange={e => updateEducation(i, 'school', e.target.value)} className="sm:col-span-5 p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <input type="text" placeholder="Degree" value={edu.degree} onChange={e => updateEducation(i, 'degree', e.target.value)} className="sm:col-span-4 p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <input type="text" placeholder="Year" value={edu.year} onChange={e => updateEducation(i, 'year', e.target.value)} className="sm:col-span-2 p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <button onClick={() => removeEducation(i)} className="absolute top-2 right-0 sm:static sm:col-span-1 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex justify-center"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </div>
@@ -339,7 +339,7 @@ export function ResumeBuilder({ onNavigateToPricing, initialData }: { onNavigate
             {projects.map((proj, i) => (
               <div key={i} className="space-y-3 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 mb-4 relative">
                 <button onClick={() => removeProject(i)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                <div className="grid grid-cols-2 gap-4 pr-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pr-8">
                   <input type="text" placeholder="Project Name" value={proj.name} onChange={e => updateProject(i, 'name', e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
                   <input type="text" placeholder="Link (Optional)" value={proj.link} onChange={e => updateProject(i, 'link', e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
                 </div>
@@ -351,8 +351,8 @@ export function ResumeBuilder({ onNavigateToPricing, initialData }: { onNavigate
       </div>
 
       {/* Right Column: Preview (A4 Size) */}
-      <div className="bg-slate-200 dark:bg-slate-900 p-4 rounded-2xl overflow-auto custom-scrollbar flex justify-center h-[80vh] items-start">
-        <div className="origin-top transform scale-[0.55] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.6] xl:scale-[0.75] transition-all duration-300" style={{ marginBottom: '-35%' }}>
+      <div className="bg-slate-200 dark:bg-slate-900 p-2 sm:p-4 rounded-2xl overflow-auto custom-scrollbar flex justify-center h-[60vh] lg:h-[80vh] items-start">
+        <div className="origin-top transform scale-[0.45] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.6] xl:scale-[0.75] transition-all duration-300" style={{ marginBottom: '-35%' }}>
           <div 
             ref={resumeRef} 
             className="bg-white shadow-xl flex-shrink-0"

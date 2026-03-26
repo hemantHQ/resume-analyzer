@@ -281,7 +281,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-8">
         {upgradeSuccess && (
           <div className="mb-6 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center text-emerald-800 dark:text-emerald-400">
             <CheckCircle2 className="w-5 h-5 mr-3" />
@@ -650,6 +650,50 @@ export default function App() {
         )}
       </main>
 
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-50 pb-safe">
+        <div className="flex items-center justify-around p-2">
+          {user && (
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex flex-col items-center justify-center w-full py-2 ${
+                activeTab === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              <BarChart3 className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Dashboard</span>
+            </button>
+          )}
+          <button
+            onClick={() => setActiveTab('analyze')}
+            className={`flex flex-col items-center justify-center w-full py-2 ${
+              activeTab === 'analyze' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            <Sparkles className="w-5 h-5 mb-1" />
+            <span className="text-[10px] font-medium">Analyze</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('builder')}
+            className={`flex flex-col items-center justify-center w-full py-2 ${
+              activeTab === 'builder' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            <FileEdit className="w-5 h-5 mb-1" />
+            <span className="text-[10px] font-medium">Builder</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('pricing')}
+            className={`flex flex-col items-center justify-center w-full py-2 ${
+              activeTab === 'pricing' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            <CreditCard className="w-5 h-5 mb-1" />
+            <span className="text-[10px] font-medium">Pricing</span>
+          </button>
+        </div>
+      </div>
+
       {/* Info Modal */}
       {showInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
@@ -669,8 +713,11 @@ export default function App() {
               <p>
                 Welcome to <strong>Resume Analyzer</strong>! This application leverages advanced AI to review, score, and provide actionable feedback on your resume.
               </p>
-              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
-                <p className="text-sm font-medium text-indigo-900 dark:text-indigo-200">
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30 text-center">
+                <p className="text-lg font-bold text-indigo-900 dark:text-indigo-200 mb-1">
+                  Hemant
+                </p>
+                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
                   🎓 MCA Final Year Project
                 </p>
               </div>
