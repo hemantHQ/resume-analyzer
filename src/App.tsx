@@ -1,111 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FileUpload } from './components/FileUpload';
 import { analyzeResume, AnalysisResult, extractAndImproveResume, ImprovedResumeData } from './services/gemini';
-import { Briefcase, CheckCircle2, XCircle, AlertCircle, Loader2, FileText, Sparkles, LogIn, LogOut, Shield, Crown, Lock, Globe, FileCheck, PenTool, LayoutDashboard, BarChart3, FileEdit, FileSearch, Info, CreditCard } from 'lucide-react';
-import { motion } from 'motion/react';
-import { useAuth } from './contexts/AuthContext';
-import { AdminPanel } from './components/AdminPanel';
-import { Dashboard } from './components/Dashboard';
+import { Briefcase, CheckCircle2, XCircle, AlertCircle, Loader2, FileText, Sparkles, LayoutDashboard, FileCheck, PenTool, Globe, FileEdit, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ResumeBuilder } from './components/ResumeBuilder';
-import { Pricing } from './components/Pricing';
-import { doc, updateDoc, increment, collection, addDoc } from 'firebase/firestore';
-import { db } from './firebase';
 import { ThemeToggle } from './components/ThemeToggle';
 import { AnalyzingLoader } from './components/AnalyzingLoader';
 
-const FREE_TIER_LIMIT = 3;
-
 export default function App() {
-  const { user, profile, loading, signInWithGoogle, logout } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<'analyze' | 'dashboard' | 'builder' | 'pricing'>('analyze');
+  const [activeTab, setActiveTab] = useState<'analyze' | 'builder'>('analyze');
   const [showInfo, setShowInfo] = useState(false);
-  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [isImproving, setIsImproving] = useState(false);
   const [improvedResumeData, setImprovedResumeData] = useState<ImprovedResumeData | null>(null);
 
-  useEffect(() => {
-    // Check for successful upgrade
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('upgrade_success') === 'true') {
-      setUpgradeSuccess(true);
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
-      // We could ideally verify the session here, but for now we just show a success message
-      // The actual tier update should be handled by a Stripe webhook or server-side verification
-      setTimeout(() => setUpgradeSuccess(false), 5000);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (user && activeTab === 'analyze' && !file) {
-      setActiveTab('dashboard');
-    }
-  }, [user]);
-
   const handleAnalyze = async () => {
-    if (!user || !profile) {
-      await signInWithGoogle();
-      return;
-    }
-
-    let currentUsage = profile.usageCount;
-    let lastReset = profile.lastUsageReset ? new Date(profile.lastUsageReset) : new Date(profile.createdAt);
-    const now = new Date();
-    const daysSinceReset = (now.getTime() - lastReset.getTime()) / (1000 * 3600 * 24);
-
-    if (daysSinceReset >= 7) {
-      currentUsage = 0;
-      lastReset = now;
-      // Update in DB
-      await updateDoc(doc(db, 'users', user.uid), {
-        usageCount: 0,
-        lastUsageReset: now.toISOString()
-      });
-    }
-
-    if (profile.tier === 'free' && currentUsage >= FREE_TIER_LIMIT) {
-      setError(`Free tier limit reached (${FREE_TIER_LIMIT} analyses per week). Please upgrade to Pro for unlimited access.`);
-      return;
-    }
-
     if (!file) {
       setError('Please provide a resume.');
       return;
     }
-
-    const isPro = profile?.tier === 'pro';
 
     setIsAnalyzing(true);
     setError(null);
     setResult(null);
 
     try {
-      // Convert file to base64
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = async () => {
         try {
           const base64String = (reader.result as string).split(',')[1];
-          const analysis = await analyzeResume(base64String, file.type, isPro);
+          const analysis = await analyzeResume(base64String, file.type);
           setResult(analysis);
-          
-          // Increment usage count and save history
-          await updateDoc(doc(db, 'users', user.uid), {
-            usageCount: increment(1)
-          });
-
-          await addDoc(collection(db, 'users', user.uid, 'history'), {
-            date: new Date().toISOString(),
-            score: analysis.score,
-            isPro: isPro
-          });
-          
         } catch (err: any) {
           setError(err.message || 'Failed to analyze resume. Please try again.');
         } finally {
@@ -123,13 +52,8 @@ export default function App() {
   };
 
   const handleImproveResume = async () => {
-    if (!user || !profile || !file) return;
+    if (!file) return;
     
-    if (profile.tier !== 'pro') {
-      setActiveTab('pricing');
-      return;
-    }
-
     setIsImproving(true);
     setError(null);
 
@@ -158,64 +82,60 @@ export default function App() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <AnalyzingLoader text="Loading application..." />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/50 selection:text-indigo-900 dark:selection:text-indigo-100 transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-emerald-100 dark:selection:bg-emerald-900/50 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-300 relative overflow-hidden">
+      {/* Modern Background Elements */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-400/20 dark:bg-emerald-600/10 blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-teal-400/20 dark:bg-teal-600/10 blur-[120px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+      </div>
+      
       {/* Header */}
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 transition-colors duration-200">
+      <header className="glass-panel sticky top-0 z-40 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <button onClick={() => window.location.reload()} className="flex items-center space-x-2 flex-1 hover:opacity-80 transition-opacity text-left">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-xl text-white shadow-sm">
-              <FileSearch className="w-5 h-5" />
+          <button onClick={() => window.location.reload()} className="flex items-center space-x-3 flex-1 hover:opacity-80 transition-opacity text-left group">
+            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-xl text-white shadow-md group-hover:shadow-lg transition-all transform group-hover:scale-105">
+              <Sparkles className="w-5 h-5" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Resume Analyzer</h1>
+            <h1 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400">Resume Analyzer</h1>
           </button>
           
-          <div className="hidden md:flex items-center justify-center space-x-1">
-            {user && (
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === 'dashboard' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4 inline-block mr-2" />
-                Dashboard
-              </button>
-            )}
+          <div className="hidden md:flex items-center justify-center space-x-2 bg-zinc-100/50 dark:bg-zinc-800/50 p-1 rounded-xl border border-zinc-200/50 dark:border-zinc-700/50 backdrop-blur-sm relative">
             <button
               onClick={() => setActiveTab('analyze')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'analyze' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+              className={`relative z-10 px-5 py-2 rounded-lg text-sm font-medium transition-colors duration-300 ${
+                activeTab === 'analyze' 
+                  ? 'text-emerald-700 dark:text-emerald-300' 
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
+              {activeTab === 'analyze' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-white dark:bg-zinc-700 rounded-lg shadow-sm -z-10"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
               <Sparkles className="w-4 h-4 inline-block mr-2" />
               Analyze
             </button>
             <button
               onClick={() => setActiveTab('builder')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'builder' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+              className={`relative z-10 px-5 py-2 rounded-lg text-sm font-medium transition-colors duration-300 ${
+                activeTab === 'builder' 
+                  ? 'text-emerald-700 dark:text-emerald-300' 
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
+              {activeTab === 'builder' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-white dark:bg-zinc-700 rounded-lg shadow-sm -z-10"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
               <FileEdit className="w-4 h-4 inline-block mr-2" />
               Builder
-            </button>
-            <button
-              onClick={() => setActiveTab('pricing')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'pricing' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-              }`}
-            >
-              <CreditCard className="w-4 h-4 inline-block mr-2" />
-              Pricing
             </button>
           </div>
 
@@ -223,400 +143,363 @@ export default function App() {
             <ThemeToggle />
             <button
               onClick={() => setShowInfo(true)}
-              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-colors"
               aria-label="Information"
             >
               <Info className="w-5 h-5" />
             </button>
-            
-            {profile && profile.role === 'admin' && (
-              <button
-                onClick={() => setShowAdmin(!showAdmin)}
-                className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  showAdmin ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Admin Panel
-              </button>
-            )}
-            
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full pl-1.5 pr-4 py-1.5 shadow-sm">
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full mr-3 shadow-inner ${
-                    profile?.tier === 'pro' ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                  }`}>
-                    {profile?.tier === 'pro' ? <Crown className="w-4 h-4" /> : <span className="font-bold text-sm">F</span>}
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-none mb-1">
-                      {profile?.displayName || user.displayName || 'User'}
-                    </span>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider leading-none ${
-                      profile?.tier === 'pro' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'
-                    }`}>
-                      {profile?.tier === 'pro' ? 'Pro Plan' : 'Free Plan'}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={logout}
-                  className="flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
-                >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={signInWithGoogle}
-                className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-              >
-                <LogIn className="w-4 h-4 mr-2" />
-                Sign Up / Login
-              </button>
-            )}
           </div>
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-8">
-        {upgradeSuccess && (
-          <div className="mb-6 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center text-emerald-800 dark:text-emerald-400">
-            <CheckCircle2 className="w-5 h-5 mr-3" />
-            <div>
-              <p className="font-medium">Payment Successful!</p>
-              <p className="text-sm opacity-90">Your account is being upgraded. It may take a few moments for the changes to reflect.</p>
-            </div>
-          </div>
-        )}
-
-        {showAdmin && profile?.role === 'admin' ? (
-          <AdminPanel />
-        ) : activeTab === 'pricing' ? (
-          <Pricing />
-        ) : activeTab === 'dashboard' ? (
-          <Dashboard />
-        ) : activeTab === 'builder' ? (
-          !user ? (
-            <div className="max-w-3xl mx-auto text-center py-20">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 transition-colors duration-200">
-                <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Lock className="w-8 h-8" />
-                </div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">Sign in required</h2>
-                <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto">
-                  Please sign in to use the Resume Builder. Generate, customize, and download ATS-friendly PDF resumes directly from the app.
-                </p>
-                <button onClick={signInWithGoogle} className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-medium shadow-sm transition-all">
-                  <LogIn className="w-5 h-5 mr-2" />
-                  Sign In with Google
-                </button>
-              </div>
-            </div>
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-12">
+        <AnimatePresence mode="wait">
+          {activeTab === 'builder' ? (
+            <motion.div
+              key="builder"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ResumeBuilder initialData={improvedResumeData} />
+            </motion.div>
           ) : (
-            <ResumeBuilder onNavigateToPricing={() => setActiveTab('pricing')} initialData={improvedResumeData} />
-          )
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column: Inputs */}
-            <div className="lg:col-span-5 space-y-6">
-              {!user && (
-                <div className="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl p-6 text-center backdrop-blur-sm">
-                  <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-300 mb-2">Sign in to get started</h3>
-                  <p className="text-indigo-700 dark:text-indigo-400/80 text-sm mb-4">Create a free account to analyze your resume. Free users get {FREE_TIER_LIMIT} analyses.</p>
-                  <button
-                    onClick={signInWithGoogle}
-                    className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-                  >
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Continue with Google
-                  </button>
-                </div>
-              )}
-
-              {profile && profile.tier === 'free' && (
-                <div className="bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex items-center justify-between backdrop-blur-sm">
-                  <div className="text-sm">
-                    <span className="font-semibold text-slate-900 dark:text-slate-100">Free Tier Usage: </span>
-                    <span className="text-slate-600 dark:text-slate-400">
-                      {profile.lastUsageReset && (new Date().getTime() - new Date(profile.lastUsageReset).getTime()) / (1000 * 3600 * 24) >= 7 ? 0 : profile.usageCount} / {FREE_TIER_LIMIT} analyses per week
-                    </span>
+            <motion.div
+              key="analyze"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+            >
+              {/* Left Column: Inputs */}
+              <div className="lg:col-span-5 space-y-6">
+                <div className="glass-card rounded-3xl p-8 transition-all hover:shadow-2xl">
+                  <div className="mb-8 text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-4">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Upload Resume</h2>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm">PDF, DOCX, or TXT formats supported</p>
                   </div>
-                  {profile.usageCount >= FREE_TIER_LIMIT && (!profile.lastUsageReset || (new Date().getTime() - new Date(profile.lastUsageReset).getTime()) / (1000 * 3600 * 24) < 7) && (
-                    <span className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-md">Limit Reached</span>
-                  )}
+                  
+                  <FileUpload onFileSelect={setFile} selectedFile={file} />
+                  
+                  <div className="mt-8">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleAnalyze}
+                      disabled={isAnalyzing || !file}
+                      className="w-full py-4 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl font-semibold shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center group"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                          Analyzing with AI...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-5 h-5 mr-3 group-hover:animate-pulse" />
+                          Analyze Resume
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
                 </div>
-              )}
 
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
-                <h2 className="text-lg font-semibold mb-4 flex items-center text-slate-900 dark:text-slate-100">
-                  <FileText className="w-5 h-5 mr-2 text-indigo-500 dark:text-indigo-400" />
-                  Upload Resume
-                </h2>
-                <FileUpload onFileSelect={setFile} selectedFile={file} />
+                <AnimatePresence>
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-2xl flex items-start text-red-700 dark:text-red-400"
+                    >
+                      <AlertCircle className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
+                      <p className="text-sm font-medium">{error}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
-              <button
-                onClick={handleAnalyze}
-                disabled={isAnalyzing || !file || (user && profile?.tier === 'free' && profile.usageCount >= FREE_TIER_LIMIT)}
-                className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {!user ? (
-                  <>
-                    <LogIn className="w-5 h-5 mr-2" />
-                    Analyze my resume
-                  </>
-                ) : isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Analyze my Resume
-                  </>
-                )}
-              </button>
-
-              {error && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl flex items-start text-red-700 dark:text-red-400">
-                  <AlertCircle className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
-                  <p className="text-sm">{error}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Right Column: Results */}
-            <div className="lg:col-span-7">
-              {isAnalyzing ? (
-                <div className="h-full min-h-[400px] flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                  <AnalyzingLoader />
-                </div>
-              ) : result ? (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-6"
-                >
-                  {/* Score Card */}
-                  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center transition-colors duration-200">
-                    <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">Overall Match Score</h3>
-                    <div className="flex justify-center items-center">
-                      <div className="relative">
-                        <svg className="w-32 h-32 transform -rotate-90">
-                          <circle
-                            cx="64"
-                            cy="64"
-                            r="56"
-                            stroke="currentColor"
-                            strokeWidth="12"
-                            fill="transparent"
-                            className="text-slate-100 dark:text-slate-700"
-                          />
-                          <circle
-                            cx="64"
-                            cy="64"
-                            r="56"
-                            stroke="currentColor"
-                            strokeWidth="12"
-                            fill="transparent"
-                            strokeDasharray={351.858}
-                            strokeDashoffset={351.858 - (351.858 * result.score) / 100}
-                            className={`${
-                              result.score >= 80 ? 'text-emerald-500' :
-                              result.score >= 60 ? 'text-amber-500' : 'text-red-500'
-                            } transition-all duration-1000 ease-out`}
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-4xl font-bold text-slate-900 dark:text-slate-100">{result.score}</span>
+              {/* Right Column: Results */}
+              <div className="lg:col-span-7">
+                <AnimatePresence mode="wait">
+                  {isAnalyzing ? (
+                    <motion.div 
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="h-full min-h-[500px] flex items-center justify-center"
+                    >
+                      <AnalyzingLoader />
+                    </motion.div>
+                  ) : result ? (
+                    <motion.div 
+                      key="results"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, staggerChildren: 0.1 }}
+                      className="space-y-6"
+                    >
+                      {/* Score Card */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="glass-card rounded-3xl p-8 text-center relative overflow-hidden"
+                      >
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-pink-500"></div>
+                        <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-6">Overall Match Score</h3>
+                        <div className="flex justify-center items-center">
+                          <div className="relative">
+                            <svg className="w-40 h-40 transform -rotate-90 drop-shadow-xl">
+                              <circle
+                                cx="80"
+                                cy="80"
+                                r="70"
+                                stroke="currentColor"
+                                strokeWidth="12"
+                                fill="transparent"
+                                className="text-zinc-100 dark:text-zinc-700/50"
+                              />
+                              <motion.circle
+                                initial={{ strokeDashoffset: 439.8 }}
+                                animate={{ strokeDashoffset: 439.8 - (439.8 * result.score) / 100 }}
+                                transition={{ duration: 1.5, ease: "easeOut" }}
+                                cx="80"
+                                cy="80"
+                                r="70"
+                                stroke="currentColor"
+                                strokeWidth="12"
+                                fill="transparent"
+                                strokeDasharray={439.8}
+                                strokeLinecap="round"
+                                className={`${
+                                  result.score >= 80 ? 'text-emerald-500' :
+                                  result.score >= 60 ? 'text-amber-500' : 'text-red-500'
+                                }`}
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className="text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">{result.score}</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    {profile?.tier === 'pro' && result.matchPercentage !== undefined && (
-                      <div className="mt-6 inline-flex items-center px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-full text-sm font-medium">
-                        <Briefcase className="w-4 h-4 mr-2" />
-                        {result.matchPercentage}% Industry Match
-                      </div>
-                    )}
-                    
-                    {result.score < 95 && (
-                      <div className="mt-6 border-t border-slate-100 dark:border-slate-700 pt-6">
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                          Want a better score? Let our AI rewrite your resume to be highly impactful and ATS-friendly.
-                        </p>
-                        <button
-                          onClick={handleImproveResume}
-                          disabled={isImproving}
-                          className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-70"
-                        >
-                          {isImproving ? (
-                            <>
-                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                              Improving Resume...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-5 h-5 mr-2" />
-                              Auto-Improve with AI {profile?.tier !== 'pro' && '(Pro)'}
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Matched/Detected Skills */}
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
-                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center">
-                        <CheckCircle2 className="w-5 h-5 mr-2 text-emerald-500" />
-                        Detected Skills
-                      </h3>
-                      {result.detectedSkills.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {result.detectedSkills.map((skill, i) => (
-                            <span key={i} className="px-3 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-full text-sm">
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">No skills detected.</p>
-                      )}
-                    </div>
-
-                    {/* Keywords / Missing Skills */}
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
-                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center">
-                        {result.missingSkills ? (
-                          <><XCircle className="w-5 h-5 mr-2 text-red-500" /> Missing Industry Skills</>
-                        ) : (
-                          <><Sparkles className="w-5 h-5 mr-2 text-indigo-500" /> Extracted Keywords</>
+                        {result.matchPercentage !== undefined && (
+                          <div className="mt-8 inline-flex items-center px-5 py-2.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-full text-sm font-semibold border border-emerald-100 dark:border-emerald-500/20">
+                            <Briefcase className="w-4 h-4 mr-2" />
+                            {result.matchPercentage}% Industry Match
+                          </div>
                         )}
-                      </h3>
-                      {(result.missingSkills || result.extractedKeywords).length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {(result.missingSkills || result.extractedKeywords).map((keyword, i) => (
-                            <span key={i} className={`px-3 py-1 border rounded-full text-sm ${
-                              result.missingSkills 
-                                ? 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/20' 
-                                : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20'
-                            }`}>
-                              {keyword}
-                            </span>
+                        
+                        {result.score < 95 && (
+                          <div className="mt-8 border-t border-zinc-100 dark:border-zinc-700/50 pt-8">
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-5 max-w-md mx-auto">
+                              Want a better score? Let our AI rewrite your resume to be highly impactful and ATS-friendly.
+                            </p>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={handleImproveResume}
+                              disabled={isImproving}
+                              className="inline-flex items-center justify-center px-8 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 rounded-2xl text-sm font-bold transition-all shadow-xl hover:shadow-2xl disabled:opacity-70"
+                            >
+                              {isImproving ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                                  Improving Resume...
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-5 h-5 mr-3" />
+                                  Auto-Improve with AI
+                                </>
+                              )}
+                            </motion.button>
+                          </div>
+                        )}
+                      </motion.div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Matched/Detected Skills */}
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="glass-card rounded-3xl p-6"
+                        >
+                          <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-5 flex items-center">
+                            <CheckCircle2 className="w-5 h-5 mr-3 text-emerald-500" />
+                            Detected Skills
+                          </h3>
+                          {result.detectedSkills.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {result.detectedSkills.map((skill, i) => (
+                                <span key={i} className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-500/20 rounded-xl text-sm font-medium">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">No skills detected.</p>
+                          )}
+                        </motion.div>
+
+                        {/* Keywords / Missing Skills */}
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="glass-card rounded-3xl p-6"
+                        >
+                          <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-5 flex items-center">
+                            {result.missingSkills ? (
+                              <><XCircle className="w-5 h-5 mr-3 text-red-500" /> Missing Industry Skills</>
+                            ) : (
+                              <><Sparkles className="w-5 h-5 mr-3 text-emerald-500" /> Extracted Keywords</>
+                            )}
+                          </h3>
+                          {(result.missingSkills || result.extractedKeywords).length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {(result.missingSkills || result.extractedKeywords).map((keyword, i) => (
+                                <span key={i} className={`px-3 py-1.5 border rounded-xl text-sm font-medium ${
+                                  result.missingSkills 
+                                    ? 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200/50 dark:border-red-500/20' 
+                                    : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-500/20'
+                                }`}>
+                                  {keyword}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                              {result.missingSkills ? "Great job! No major skills missing." : "No keywords extracted."}
+                            </p>
+                          )}
+                        </motion.div>
+                      </div>
+
+                      {/* Basic Suggestions */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="glass-card rounded-3xl p-8"
+                      >
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Suggestions for Improvement</h3>
+                        <ul className="space-y-4">
+                          {result.suggestions.map((suggestion, i) => (
+                            <li key={i} className="flex items-start bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl">
+                              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold mr-4">
+                                {i + 1}
+                              </span>
+                              <span className="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed pt-1">{suggestion}</span>
+                            </li>
                           ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                          {result.missingSkills ? "Great job! No major skills missing." : "No keywords extracted."}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                        </ul>
+                      </motion.div>
 
-                  {/* Basic Suggestions */}
-                  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
-                    <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4">Suggestions for Improvement</h3>
-                    <ul className="space-y-3">
-                      {result.suggestions.map((suggestion, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
-                            {i + 1}
-                          </span>
-                          <span className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{suggestion}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* PRO FEATURES */}
-                  {profile?.tier === 'pro' && (
-                    <>
                       {/* Section Scores */}
                       {result.sectionScores && (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
-                          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center">
-                            <LayoutDashboard className="w-5 h-5 mr-2 text-indigo-500" />
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="glass-card rounded-3xl p-8"
+                        >
+                          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center">
+                            <LayoutDashboard className="w-6 h-6 mr-3 text-emerald-500" />
                             Section-wise Scoring
                           </h3>
-                          <div className="space-y-4">
+                          <div className="space-y-6">
                             {result.sectionScores.map((section, i) => (
-                              <div key={i} className="border-b border-slate-100 dark:border-slate-700 last:border-0 pb-4 last:pb-0">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium text-slate-800 dark:text-slate-200">{section.section}</span>
-                                  <span className={`font-bold ${section.score >= 80 ? 'text-emerald-600 dark:text-emerald-400' : section.score >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
+                              <div key={i} className="border-b border-zinc-100 dark:border-zinc-700/50 last:border-0 pb-6 last:pb-0">
+                                <div className="flex justify-between items-center mb-3">
+                                  <span className="font-bold text-zinc-800 dark:text-zinc-200 text-lg">{section.section}</span>
+                                  <span className={`px-3 py-1 rounded-lg font-bold text-sm ${
+                                    section.score >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 
+                                    section.score >= 60 ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400' : 
+                                    'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
+                                  }`}>
                                     {section.score}/100
                                   </span>
                                 </div>
-                                <p className="text-sm text-slate-600 dark:text-slate-400">{section.feedback}</p>
+                                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{section.feedback}</p>
                               </div>
                             ))}
                           </div>
-                        </div>
+                        </motion.div>
                       )}
 
                       {/* ATS Compatibility */}
                       {result.atsCompatibility && (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
-                          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center">
-                            <FileCheck className="w-5 h-5 mr-2 text-indigo-500" />
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="glass-card rounded-3xl p-8"
+                        >
+                          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center">
+                            <FileCheck className="w-6 h-6 mr-3 text-emerald-500" />
                             ATS Compatibility Check
                           </h3>
-                          <div className="flex items-center mb-4">
-                            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mr-3">{result.atsCompatibility.score}/100</div>
-                            <p className="text-sm text-slate-600 dark:text-slate-400">{result.atsCompatibility.feedback}</p>
+                          <div className="flex items-center mb-6 bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl">
+                            <div className="text-3xl font-black text-zinc-900 dark:text-white mr-4">{result.atsCompatibility.score}<span className="text-lg text-zinc-400">/100</span></div>
+                            <p className="text-sm text-zinc-600 dark:text-zinc-300 font-medium">{result.atsCompatibility.feedback}</p>
                           </div>
                           {result.atsCompatibility.issues.length > 0 && (
-                            <div className="bg-red-50 dark:bg-red-900/10 rounded-xl p-4 border border-red-100 dark:border-red-900/30">
-                              <h4 className="text-sm font-semibold text-red-800 dark:text-red-400 mb-2">Issues to Fix:</h4>
-                              <ul className="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
+                            <div className="bg-red-50 dark:bg-red-900/10 rounded-2xl p-5 border border-red-100 dark:border-red-900/30">
+                              <h4 className="text-sm font-bold text-red-800 dark:text-red-400 mb-3">Issues to Fix:</h4>
+                              <ul className="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-2">
                                 {result.atsCompatibility.issues.map((issue, i) => (
                                   <li key={i}>{issue}</li>
                                 ))}
                               </ul>
                             </div>
                           )}
-                        </div>
+                        </motion.div>
                       )}
 
                       {/* Advanced AI Suggestions */}
                       {result.advancedSuggestions && result.advancedSuggestions.length > 0 && (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
-                          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center">
-                            <PenTool className="w-5 h-5 mr-2 text-indigo-500" />
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="glass-card rounded-3xl p-8"
+                        >
+                          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center">
+                            <PenTool className="w-6 h-6 mr-3 text-emerald-500" />
                             Advanced AI Rewrites
                           </h3>
                           <div className="space-y-6">
                             {result.advancedSuggestions.map((suggestion, i) => (
-                              <div key={i} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-                                <span className="inline-block px-2 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 text-xs font-semibold rounded mb-3">
+                              <div key={i} className="bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-700/50">
+                                <span className="inline-block px-3 py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg mb-4 uppercase tracking-wider">
                                   {suggestion.section}
                                 </span>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                   <div>
-                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Original</p>
-                                    <p className="text-sm text-slate-600 dark:text-slate-300 line-through decoration-red-300 dark:decoration-red-500/50">{suggestion.original}</p>
+                                    <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">Original</p>
+                                    <p className="text-sm text-zinc-500 dark:text-zinc-400 line-through decoration-red-300 dark:decoration-red-500/50">{suggestion.original}</p>
                                   </div>
                                   <div>
-                                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase mb-1">Improved</p>
-                                    <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{suggestion.improved}</p>
+                                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">Improved</p>
+                                    <p className="text-sm text-zinc-800 dark:text-zinc-200 font-medium leading-relaxed">{suggestion.improved}</p>
                                   </div>
                                 </div>
                               </div>
                             ))}
                           </div>
-                        </div>
+                        </motion.div>
                       )}
 
                       {/* Best Websites to Apply */}
                       {result.bestWebsitesToApply && result.bestWebsitesToApply.length > 0 && (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
-                          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center">
-                            <Globe className="w-5 h-5 mr-2 text-indigo-500" />
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="glass-card rounded-3xl p-8"
+                        >
+                          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center">
+                            <Globe className="w-6 h-6 mr-3 text-emerald-500" />
                             Best Places to Apply
                           </h3>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -626,116 +509,124 @@ export default function App() {
                                 href={site.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="block p-4 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md transition-all group bg-slate-50/50 dark:bg-slate-900/50"
+                                className="block p-5 border border-zinc-200 dark:border-zinc-700/50 rounded-2xl hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-lg transition-all duration-300 group bg-zinc-50/50 dark:bg-zinc-900/50 transform hover:-translate-y-1"
                               >
-                                <h4 className="font-semibold text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 mb-1">{site.name}</h4>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{site.reason}</p>
+                                <h4 className="font-bold text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 mb-2">{site.name}</h4>
+                                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{site.reason}</p>
                               </a>
                             ))}
                           </div>
-                        </div>
+                        </motion.div>
                       )}
-                    </>
+                    </motion.div>
+                  ) : (
+                    <motion.div 
+                      key="empty"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="h-full min-h-[500px] flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-3xl glass-card transition-colors duration-300"
+                    >
+                      <Sparkles className="w-16 h-16 mb-6 text-zinc-300 dark:text-zinc-600" />
+                      <p className="text-base font-medium">Upload a resume to see the analysis</p>
+                    </motion.div>
                   )}
-
-                </motion.div>
-              ) : (
-                <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50 transition-colors duration-200">
-                  <Sparkles className="w-12 h-12 mb-4 text-slate-300 dark:text-slate-600" />
-                  <p className="text-sm font-medium">Upload a resume to see the analysis</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-50 pb-safe">
-        <div className="flex items-center justify-around p-2">
-          {user && (
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`flex flex-col items-center justify-center w-full py-2 ${
-                activeTab === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
-              }`}
-            >
-              <BarChart3 className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-medium">Dashboard</span>
-            </button>
-          )}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-zinc-200 dark:border-zinc-800 z-50 pb-safe">
+        <div className="flex items-center justify-around p-2 relative">
           <button
             onClick={() => setActiveTab('analyze')}
-            className={`flex flex-col items-center justify-center w-full py-2 ${
-              activeTab === 'analyze' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
+            className={`relative z-10 flex flex-col items-center justify-center w-full py-3 rounded-xl transition-colors duration-300 ${
+              activeTab === 'analyze' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-400'
             }`}
           >
-            <Sparkles className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-medium">Analyze</span>
+            {activeTab === 'analyze' && (
+              <motion.div
+                layoutId="activeMobileTab"
+                className="absolute inset-0 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl -z-10"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+            <Sparkles className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-bold tracking-wide uppercase">Analyze</span>
           </button>
           <button
             onClick={() => setActiveTab('builder')}
-            className={`flex flex-col items-center justify-center w-full py-2 ${
-              activeTab === 'builder' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
+            className={`relative z-10 flex flex-col items-center justify-center w-full py-3 rounded-xl transition-colors duration-300 ${
+              activeTab === 'builder' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-400'
             }`}
           >
-            <FileEdit className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-medium">Builder</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('pricing')}
-            className={`flex flex-col items-center justify-center w-full py-2 ${
-              activeTab === 'pricing' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
-            }`}
-          >
-            <CreditCard className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-medium">Pricing</span>
+            {activeTab === 'builder' && (
+              <motion.div
+                layoutId="activeMobileTab"
+                className="absolute inset-0 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl -z-10"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+            <FileEdit className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-bold tracking-wide uppercase">Builder</span>
           </button>
         </div>
       </div>
 
       {/* Info Modal */}
-      {showInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-800"
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm"
           >
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white flex items-center">
-                <Info className="w-5 h-5 mr-2 text-indigo-500" />
-                About This Project
-              </h2>
-            </div>
-            <div className="p-6 space-y-4 text-slate-600 dark:text-slate-300">
-              <p>
-                Welcome to <strong>Resume Analyzer</strong>! This application leverages advanced AI to review, score, and provide actionable feedback on your resume.
-              </p>
-              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30 text-center">
-                <p className="text-lg font-bold text-indigo-900 dark:text-indigo-200 mb-1">
-                  Hemant
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-zinc-800">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center">
+                  <Info className="w-6 h-6 mr-3 text-emerald-500" />
+                  About This Project
+                </h2>
+              </div>
+              <div className="p-8 space-y-6 text-zinc-600 dark:text-zinc-300">
+                <p className="leading-relaxed">
+                  Welcome to <strong>Resume Analyzer</strong>! This application leverages advanced AI to review, score, and provide actionable feedback on your resume.
                 </p>
-                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                  🎓 MCA Final Year Project
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 text-center">
+                  <p className="text-2xl font-black text-emerald-900 dark:text-emerald-200 mb-2">
+                    Hemant
+                  </p>
+                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300 tracking-wide uppercase">
+                    🎓 MCA Final Year Project
+                  </p>
+                </div>
+                <p className="text-sm leading-relaxed">
+                  This project demonstrates the integration of modern web technologies, including React, Tailwind CSS, and the Gemini AI API, to build a practical, real-world application that helps job seekers improve their chances of success.
                 </p>
               </div>
-              <p className="text-sm">
-                This project demonstrates the integration of modern web technologies, including React, Firebase, and the Gemini AI API, to build a practical, real-world application that helps job seekers improve their chances of success.
-              </p>
-            </div>
-            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end">
-              <button
-                onClick={() => setShowInfo(false)}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
-              >
-                Close
-              </button>
-            </div>
+              <div className="p-6 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 flex justify-end">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowInfo(false)}
+                  className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 rounded-xl font-bold transition-colors shadow-md"
+                >
+                  Close
+                </motion.button>
+              </div>
+            </motion.div>
           </motion.div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

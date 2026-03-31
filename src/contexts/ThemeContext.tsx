@@ -20,37 +20,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = window.document.documentElement;
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    const applyTheme = () => {
-      if (theme === 'dark') {
-        root.classList.add('dark');
-        setIsDark(true);
-      } else if (theme === 'light') {
-        root.classList.remove('dark');
-        setIsDark(false);
-      } else {
-        // System
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (systemPrefersDark) {
-          root.classList.add('dark');
-          setIsDark(true);
-        } else {
-          root.classList.remove('dark');
-          setIsDark(false);
-        }
-      }
-    };
+    const isDarkMode = theme === 'dark' || (theme === 'system' && systemDark);
+    setIsDark(isDarkMode);
 
-    applyTheme();
-    localStorage.setItem('theme', theme);
-
-    // Listen for system changes if set to system
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = () => applyTheme();
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
+    if (isDarkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
+
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   return (
