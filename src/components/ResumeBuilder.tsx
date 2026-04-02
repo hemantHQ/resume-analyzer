@@ -78,7 +78,7 @@ function RichInput({ value, onChange }: { value: string, onChange: (v: string) =
       <div
         ref={editorRef}
         contentEditable
-        className="p-3 min-h-[100px] text-sm text-zinc-900 dark:text-zinc-100 outline-none prose dark:prose-invert max-w-none prose-sm prose-p:my-1 prose-ul:my-1 prose-li:my-0 focus:bg-white/80 dark:focus:bg-zinc-900/80 transition-colors"
+        className="p-3 min-h-[100px] text-sm text-zinc-900 dark:text-zinc-100 outline-none prose dark:prose-invert max-w-none prose-sm prose-p:my-1 prose-ul:my-1 prose-li:my-0 focus:bg-white/80 dark:focus:bg-zinc-900/80 transition-colors text-left"
         onInput={(e) => onChange(e.currentTarget.innerHTML)}
         onBlur={(e) => onChange(e.currentTarget.innerHTML)}
         style={{ whiteSpace: 'pre-wrap' }}
@@ -208,7 +208,7 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
             <h3 className="font-semibold text-zinc-800 dark:text-zinc-200 border-b border-zinc-200/50 dark:border-zinc-700/50 pb-2 flex items-center">
               <LayoutTemplate className="w-4 h-4 mr-2 text-emerald-500" /> Template
             </h3>
-            <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-4">
               {['modern', 'simple', 'professional'].map((t) => (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -267,11 +267,11 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
                     animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
                     exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="flex gap-2 items-center overflow-hidden"
+                    className="flex flex-col sm:flex-row gap-2 items-start sm:items-center overflow-hidden relative pr-8 sm:pr-0"
                   >
-                    <input type="text" placeholder="Label (e.g. LinkedIn)" value={link.label} onChange={e => updateLink(i, 'label', e.target.value)} className="w-1/3 p-2.5 border border-zinc-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none backdrop-blur-sm transition-all" />
-                    <input type="text" placeholder="URL" value={link.url} onChange={e => updateLink(i, 'url', e.target.value)} className="flex-1 p-2.5 border border-zinc-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none backdrop-blur-sm transition-all" />
-                    <button onClick={() => removeLink(i)} className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    <input type="text" placeholder="Label (e.g. LinkedIn)" value={link.label} onChange={e => updateLink(i, 'label', e.target.value)} className="w-full sm:w-1/3 p-2.5 border border-zinc-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none backdrop-blur-sm transition-all" />
+                    <input type="text" placeholder="URL" value={link.url} onChange={e => updateLink(i, 'url', e.target.value)} className="w-full sm:flex-1 p-2.5 border border-zinc-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none backdrop-blur-sm transition-all" />
+                    <button onClick={() => removeLink(i)} className="absolute top-1 right-1 sm:static p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -446,11 +446,11 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
       </div>
 
       {/* Right Column: Preview (A4 Size) */}
-      <div className="glass-card p-2 sm:p-4 rounded-3xl overflow-auto custom-scrollbar flex justify-center h-[60vh] lg:h-[80vh] items-start">
-        <div className="origin-top transform scale-[0.45] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.6] xl:scale-[0.75] transition-all duration-300" style={{ marginBottom: '-35%' }}>
+      <div className="glass-card p-2 sm:p-4 rounded-3xl overflow-auto custom-scrollbar flex justify-start sm:justify-center h-[60vh] lg:h-[80vh] items-start">
+        <div className="origin-top-left sm:origin-top transform max-[400px]:scale-[0.35] scale-[0.45] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.6] xl:scale-[0.75] transition-all duration-300" style={{ marginBottom: '-50%' }}>
           <div 
             ref={resumeRef} 
-            className="bg-white shadow-xl flex-shrink-0"
+            className="bg-white shadow-xl flex-shrink-0 text-left"
             style={{ width: '210mm', minHeight: '297mm', padding: '20mm', boxSizing: 'border-box' }}
           >
           {template === 'simple' && (
