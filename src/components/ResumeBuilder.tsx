@@ -90,7 +90,7 @@ function RichInput({ value, onChange }: { value: string, onChange: (v: string) =
 export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeData | null }) {
   const resumeRef = useRef<HTMLDivElement>(null);
 
-  const [template, setTemplate] = useState<'modern' | 'simple' | 'professional'>('professional');
+  const [template, setTemplate] = useState<'modern' | 'simple' | 'professional' | 'minimal' | 'classic' | 'elegant' | 'creative' | 'executive' | 'tech' | 'startup'>('professional');
   const [name, setName] = useState('John Doe');
   const [profession, setProfession] = useState('Software Engineer');
   const [email, setEmail] = useState('john@example.com');
@@ -208,14 +208,14 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
             <h3 className="font-semibold text-zinc-800 dark:text-zinc-200 border-b border-zinc-200/50 dark:border-zinc-700/50 pb-2 flex items-center">
               <LayoutTemplate className="w-4 h-4 mr-2 text-emerald-500" /> Template
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-4">
-              {['modern', 'simple', 'professional'].map((t) => (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {['modern', 'simple', 'professional', 'minimal', 'classic', 'elegant', 'creative', 'executive', 'tech', 'startup'].map((t) => (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   key={t}
                   onClick={() => setTemplate(t as any)}
-                  className={`p-3 rounded-xl border-2 text-sm font-medium capitalize transition-all ${template === t ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 shadow-sm' : 'border-zinc-200/50 dark:border-zinc-700/50 text-zinc-600 dark:text-zinc-400 hover:border-emerald-300 dark:hover:border-emerald-700 bg-white/50 dark:bg-zinc-800/50'}`}
+                  className={`px-3 py-2 rounded-xl border-2 text-xs sm:text-sm font-medium capitalize transition-all ${template === t ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 shadow-sm' : 'border-zinc-200/50 dark:border-zinc-700/50 text-zinc-600 dark:text-zinc-400 hover:border-emerald-300 dark:hover:border-emerald-700 bg-white/50 dark:bg-zinc-800/50'}`}
                 >
                   {t}
                 </motion.button>
@@ -697,6 +697,543 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
               </div>
             </div>
           )}
+          {template === 'minimal' && (
+            <div className="text-zinc-800 font-sans">
+              <div className="mb-8">
+                <h1 className="text-4xl font-light tracking-tight mb-2">{name}</h1>
+                <div className="text-sm text-zinc-500 flex flex-wrap gap-4">
+                  <span>{email}</span>
+                  <span>{phone}</span>
+                  {links.map((l, i) => <a key={i} href={l.url} className="hover:text-zinc-800">{l.label}</a>)}
+                </div>
+              </div>
+              
+              {summary && (
+                <div className="mb-8">
+                  <div className="text-sm leading-relaxed text-zinc-600" dangerouslySetInnerHTML={{ __html: summary }} />
+                </div>
+              )}
+
+              <div className="grid grid-cols-12 gap-8">
+                <div className="col-span-3 space-y-8">
+                  {skills.length > 0 && (
+                    <div>
+                      <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4">Skills</h2>
+                      <div className="flex flex-col gap-1 text-sm text-zinc-600">
+                        {skills.map((s, i) => <span key={i}>{s}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  {education.length > 0 && (
+                    <div>
+                      <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4">Education</h2>
+                      {education.map((edu, i) => (
+                        <div key={i} className="mb-3 text-sm">
+                          <div className="font-medium text-zinc-800">{edu.degree}</div>
+                          <div className="text-zinc-500">{edu.school}</div>
+                          <div className="text-zinc-400 text-xs">{edu.year}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="col-span-9 space-y-8">
+                  <div>
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4">Experience</h2>
+                    {isFresher ? (
+                      <div className="text-sm text-zinc-600">Fresher - Ready to contribute.</div>
+                    ) : (
+                      experience.map((exp, i) => (
+                        <div key={i} className="mb-6 text-sm">
+                          <div className="flex justify-between items-baseline mb-1">
+                            <span className="font-medium text-zinc-900 text-base">{exp.role}</span>
+                            <span className="text-zinc-400 text-xs">{exp.duration}</span>
+                          </div>
+                          <div className="text-zinc-500 mb-2">{exp.company}</div>
+                          <div className="leading-relaxed text-zinc-600" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {projects.length > 0 && (
+                    <div>
+                      <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4">Projects</h2>
+                      {projects.map((proj, i) => (
+                        <div key={i} className="mb-5 text-sm">
+                          <div className="font-medium text-zinc-900 text-base mb-1">
+                            {proj.name} {proj.link && <a href={proj.link} className="text-zinc-400 hover:text-zinc-800 text-sm ml-2">↗</a>}
+                          </div>
+                          <div className="leading-relaxed text-zinc-600" dangerouslySetInnerHTML={{ __html: proj.description }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {template === 'classic' && (
+            <div className="text-black font-serif">
+              <div className="text-center mb-6">
+                <h1 className="text-3xl font-bold mb-2">{name}</h1>
+                <div className="text-sm flex flex-wrap justify-center gap-2">
+                  <span>{email}</span> | <span>{phone}</span>
+                  {links.map((l, i) => <span key={i}>| <a href={l.url}>{l.label}</a></span>)}
+                </div>
+              </div>
+              
+              {summary && (
+                <div className="mb-5">
+                  <h2 className="text-lg font-bold border-b-2 border-black mb-2 uppercase">Summary</h2>
+                  <div className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: summary }} />
+                </div>
+              )}
+
+              <div className="mb-5">
+                <h2 className="text-lg font-bold border-b-2 border-black mb-2 uppercase">Experience</h2>
+                {isFresher ? (
+                  <div className="text-sm">Entry Level Candidate</div>
+                ) : (
+                  experience.map((exp, i) => (
+                    <div key={i} className="mb-4 text-sm">
+                      <div className="flex justify-between font-bold">
+                        <span>{exp.role}, {exp.company}</span>
+                        <span>{exp.duration}</span>
+                      </div>
+                      <div className="leading-relaxed mt-1" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {projects.length > 0 && (
+                <div className="mb-5">
+                  <h2 className="text-lg font-bold border-b-2 border-black mb-2 uppercase">Projects</h2>
+                  {projects.map((proj, i) => (
+                    <div key={i} className="mb-3 text-sm">
+                      <div className="font-bold">
+                        {proj.name} {proj.link && <span className="font-normal italic">- {proj.link}</span>}
+                      </div>
+                      <div className="leading-relaxed mt-1" dangerouslySetInnerHTML={{ __html: proj.description }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                {education.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-bold border-b-2 border-black mb-2 uppercase">Education</h2>
+                    {education.map((edu, i) => (
+                      <div key={i} className="mb-2 text-sm">
+                        <div className="font-bold">{edu.degree}</div>
+                        <div>{edu.school}, {edu.year}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {skills.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-bold border-b-2 border-black mb-2 uppercase">Skills</h2>
+                    <ul className="list-disc pl-5 text-sm">
+                      {skills.map((s, i) => <li key={i}>{s}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {template === 'elegant' && (
+            <div className="text-slate-800 font-sans">
+              <div className="flex items-center justify-between mb-8 border-b border-slate-300 pb-6">
+                <div>
+                  <h1 className="text-4xl font-serif text-slate-900 mb-2">{name}</h1>
+                  <p className="text-xl text-slate-500 font-light">{profession}</p>
+                </div>
+                <div className="text-right text-sm text-slate-500 space-y-1">
+                  <div>{email}</div>
+                  <div>{phone}</div>
+                  {links.map((l, i) => <div key={i}><a href={l.url} className="hover:text-slate-800">{l.label}</a></div>)}
+                </div>
+              </div>
+              
+              {summary && (
+                <div className="mb-8">
+                  <div className="text-sm leading-relaxed text-slate-600 italic" dangerouslySetInnerHTML={{ __html: summary }} />
+                </div>
+              )}
+
+              <div className="mb-8">
+                <h2 className="text-lg font-serif text-slate-900 mb-4 flex items-center"><span className="w-4 h-px bg-slate-400 mr-3"></span>Experience</h2>
+                {isFresher ? (
+                  <div className="text-sm text-slate-600">Entry Level</div>
+                ) : (
+                  experience.map((exp, i) => (
+                    <div key={i} className="mb-6 text-sm">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="font-bold text-slate-900 text-base">{exp.role}</span>
+                        <span className="text-slate-500">{exp.duration}</span>
+                      </div>
+                      <div className="text-slate-600 font-medium mb-2">{exp.company}</div>
+                      <div className="leading-relaxed text-slate-600" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-8">
+                {education.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-serif text-slate-900 mb-4 flex items-center"><span className="w-4 h-px bg-slate-400 mr-3"></span>Education</h2>
+                    {education.map((edu, i) => (
+                      <div key={i} className="mb-4 text-sm">
+                        <div className="font-bold text-slate-900">{edu.degree}</div>
+                        <div className="text-slate-600">{edu.school}</div>
+                        <div className="text-slate-500 text-xs mt-1">{edu.year}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div>
+                  {skills.length > 0 && (
+                    <div className="mb-6">
+                      <h2 className="text-lg font-serif text-slate-900 mb-4 flex items-center"><span className="w-4 h-px bg-slate-400 mr-3"></span>Skills</h2>
+                      <div className="flex flex-wrap gap-2 text-sm">
+                        {skills.map((s, i) => <span key={i} className="bg-slate-100 text-slate-700 px-2 py-1 rounded">{s}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  {projects.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-serif text-slate-900 mb-4 flex items-center"><span className="w-4 h-px bg-slate-400 mr-3"></span>Projects</h2>
+                      {projects.map((proj, i) => (
+                        <div key={i} className="mb-3 text-sm">
+                          <div className="font-bold text-slate-900">{proj.name}</div>
+                          <div className="leading-relaxed text-slate-600 mt-1" dangerouslySetInnerHTML={{ __html: proj.description }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {template === 'creative' && (
+            <div className="text-zinc-800 font-sans">
+              <div className="bg-indigo-600 text-white p-8 -mx-[20mm] -mt-[20mm] mb-8 rounded-b-3xl">
+                <h1 className="text-4xl font-black mb-2">{name}</h1>
+                <p className="text-xl text-indigo-200 font-medium mb-4">{profession}</p>
+                <div className="text-sm text-indigo-100 flex flex-wrap gap-4">
+                  <span className="bg-indigo-700/50 px-3 py-1 rounded-full">{email}</span>
+                  <span className="bg-indigo-700/50 px-3 py-1 rounded-full">{phone}</span>
+                  {links.map((l, i) => <a key={i} href={l.url} className="bg-indigo-700/50 px-3 py-1 rounded-full hover:bg-indigo-500 transition-colors">{l.label}</a>)}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-8">
+                <div className="col-span-2 space-y-8">
+                  {summary && (
+                    <div>
+                      <h2 className="text-xl font-bold text-indigo-900 mb-3">About Me</h2>
+                      <div className="text-sm leading-relaxed text-zinc-600" dangerouslySetInnerHTML={{ __html: summary }} />
+                    </div>
+                  )}
+
+                  <div>
+                    <h2 className="text-xl font-bold text-indigo-900 mb-4">Experience</h2>
+                    {isFresher ? (
+                      <div className="text-sm text-zinc-600">Fresher</div>
+                    ) : (
+                      experience.map((exp, i) => (
+                        <div key={i} className="mb-6 text-sm">
+                          <div className="font-bold text-zinc-900 text-base">{exp.role}</div>
+                          <div className="text-indigo-600 font-medium mb-2">{exp.company} • <span className="text-zinc-400">{exp.duration}</span></div>
+                          <div className="leading-relaxed text-zinc-600" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {projects.length > 0 && (
+                    <div>
+                      <h2 className="text-xl font-bold text-indigo-900 mb-4">Projects</h2>
+                      {projects.map((proj, i) => (
+                        <div key={i} className="mb-5 text-sm bg-zinc-50 p-4 rounded-xl">
+                          <div className="font-bold text-zinc-900 text-base mb-1">
+                            {proj.name} {proj.link && <a href={proj.link} className="text-indigo-600 text-sm font-normal ml-2 hover:underline">Link</a>}
+                          </div>
+                          <div className="leading-relaxed text-zinc-600" dangerouslySetInnerHTML={{ __html: proj.description }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="col-span-1 space-y-8">
+                  {skills.length > 0 && (
+                    <div>
+                      <h2 className="text-xl font-bold text-indigo-900 mb-4">Skills</h2>
+                      <div className="flex flex-wrap gap-2 text-sm">
+                        {skills.map((s, i) => <span key={i} className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1.5 rounded-lg font-medium">{s}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  {education.length > 0 && (
+                    <div>
+                      <h2 className="text-xl font-bold text-indigo-900 mb-4">Education</h2>
+                      {education.map((edu, i) => (
+                        <div key={i} className="mb-4 text-sm">
+                          <div className="font-bold text-zinc-900">{edu.degree}</div>
+                          <div className="text-zinc-600 mt-1">{edu.school}</div>
+                          <div className="text-indigo-600 font-medium text-xs mt-1">{edu.year}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {template === 'executive' && (
+            <div className="text-gray-900 font-sans">
+              <div className="border-b-2 border-gray-900 pb-6 mb-6 flex justify-between items-end">
+                <div>
+                  <h1 className="text-4xl font-bold uppercase tracking-tight mb-1">{name}</h1>
+                  <p className="text-xl text-gray-600">{profession}</p>
+                </div>
+                <div className="text-right text-sm text-gray-600">
+                  <div>{email}</div>
+                  <div>{phone}</div>
+                  {links.map((l, i) => <div key={i}><a href={l.url}>{l.label}</a></div>)}
+                </div>
+              </div>
+              
+              {summary && (
+                <div className="mb-6">
+                  <div className="text-sm leading-relaxed font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: summary }} />
+                </div>
+              )}
+
+              {skills.length > 0 && (
+                <div className="mb-6 pb-6 border-b border-gray-300">
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-gray-900 mb-3">Core Expertise</h2>
+                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-gray-700">
+                    {skills.map((s, i) => <span key={i} className="flex items-center"><span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span>{s}</span>)}
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-6">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-gray-900 mb-4">Professional Experience</h2>
+                {isFresher ? (
+                  <div className="text-sm">Entry Level</div>
+                ) : (
+                  experience.map((exp, i) => (
+                    <div key={i} className="mb-5 text-sm">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="font-bold text-gray-900 text-base">{exp.company}</span>
+                        <span className="font-bold text-gray-600">{exp.duration}</span>
+                      </div>
+                      <div className="text-gray-700 italic mb-2">{exp.role}</div>
+                      <div className="leading-relaxed text-gray-700" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                {projects.length > 0 && (
+                  <div>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-900 mb-4">Selected Projects</h2>
+                    {projects.map((proj, i) => (
+                      <div key={i} className="mb-4 text-sm">
+                        <div className="font-bold text-gray-900">{proj.name}</div>
+                        <div className="leading-relaxed text-gray-700 mt-1" dangerouslySetInnerHTML={{ __html: proj.description }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {education.length > 0 && (
+                  <div>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-900 mb-4">Education</h2>
+                    {education.map((edu, i) => (
+                      <div key={i} className="mb-3 text-sm">
+                        <div className="font-bold text-gray-900">{edu.degree}</div>
+                        <div className="text-gray-700">{edu.school}</div>
+                        <div className="text-gray-500">{edu.year}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {template === 'tech' && (
+            <div className="text-slate-800 font-mono">
+              <div className="border-l-4 border-blue-500 pl-6 mb-8">
+                <h1 className="text-3xl font-bold text-slate-900 mb-2">{name}</h1>
+                <p className="text-lg text-blue-600 mb-4">&gt; {profession}_</p>
+                <div className="text-sm text-slate-500 flex flex-wrap gap-4">
+                  <span>[ {email} ]</span>
+                  <span>[ {phone} ]</span>
+                  {links.map((l, i) => <a key={i} href={l.url} className="hover:text-blue-600">[ {l.label} ]</a>)}
+                </div>
+              </div>
+              
+              {summary && (
+                <div className="mb-8">
+                  <h2 className="text-sm font-bold text-slate-400 mb-2 uppercase">/* About */</h2>
+                  <div className="text-sm leading-relaxed text-slate-700" dangerouslySetInnerHTML={{ __html: summary }} />
+                </div>
+              )}
+
+              {skills.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-sm font-bold text-slate-400 mb-3 uppercase">/* Skills */</h2>
+                  <div className="flex flex-wrap gap-2 text-sm">
+                    {skills.map((s, i) => <span key={i} className="bg-slate-100 text-blue-700 px-2 py-1 rounded border border-slate-200">{s}</span>)}
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-8">
+                <h2 className="text-sm font-bold text-slate-400 mb-4 uppercase">/* Experience */</h2>
+                {isFresher ? (
+                  <div className="text-sm text-slate-600">Initializing career...</div>
+                ) : (
+                  experience.map((exp, i) => (
+                    <div key={i} className="mb-6 text-sm">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="font-bold text-slate-900 text-base">{exp.role} @ {exp.company}</span>
+                        <span className="text-slate-500">{exp.duration}</span>
+                      </div>
+                      <div className="leading-relaxed text-slate-700 mt-2" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-8">
+                {projects.length > 0 && (
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-400 mb-4 uppercase">/* Projects */</h2>
+                    {projects.map((proj, i) => (
+                      <div key={i} className="mb-4 text-sm">
+                        <div className="font-bold text-slate-900">{proj.name} {proj.link && <a href={proj.link} className="text-blue-500 ml-2">🔗</a>}</div>
+                        <div className="leading-relaxed text-slate-700 mt-1" dangerouslySetInnerHTML={{ __html: proj.description }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {education.length > 0 && (
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-400 mb-4 uppercase">/* Education */</h2>
+                    {education.map((edu, i) => (
+                      <div key={i} className="mb-4 text-sm">
+                        <div className="font-bold text-slate-900">{edu.degree}</div>
+                        <div className="text-slate-700">{edu.school}</div>
+                        <div className="text-slate-500">{edu.year}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {template === 'startup' && (
+            <div className="text-zinc-800 font-sans">
+              <div className="flex items-center gap-6 mb-8">
+                <div className="w-24 h-24 bg-gradient-to-br from-orange-400 to-pink-500 rounded-3xl flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+                  {name.charAt(0)}
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold text-zinc-900 mb-1">{name}</h1>
+                  <p className="text-xl text-orange-500 font-medium mb-2">{profession}</p>
+                  <div className="text-sm text-zinc-500 flex flex-wrap gap-3">
+                    <span>{email}</span> • <span>{phone}</span>
+                    {links.map((l, i) => <span key={i}>• <a href={l.url} className="hover:text-orange-500 font-medium">{l.label}</a></span>)}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-8">
+                <div className="col-span-2 space-y-8">
+                  {summary && (
+                    <div>
+                      <h2 className="text-lg font-bold text-zinc-900 mb-3 flex items-center"><span className="w-2 h-6 bg-orange-400 rounded-full mr-2"></span> About</h2>
+                      <div className="text-sm leading-relaxed text-zinc-600 bg-orange-50/50 p-4 rounded-2xl" dangerouslySetInnerHTML={{ __html: summary }} />
+                    </div>
+                  )}
+
+                  <div>
+                    <h2 className="text-lg font-bold text-zinc-900 mb-4 flex items-center"><span className="w-2 h-6 bg-pink-400 rounded-full mr-2"></span> Experience</h2>
+                    {isFresher ? (
+                      <div className="text-sm text-zinc-600">Ready to build!</div>
+                    ) : (
+                      <div className="space-y-6">
+                        {experience.map((exp, i) => (
+                          <div key={i} className="text-sm">
+                            <div className="font-bold text-zinc-900 text-base">{exp.role}</div>
+                            <div className="text-orange-500 font-medium mb-2">{exp.company} <span className="text-zinc-400 font-normal ml-2">{exp.duration}</span></div>
+                            <div className="leading-relaxed text-zinc-600" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {projects.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-zinc-900 mb-4 flex items-center"><span className="w-2 h-6 bg-orange-400 rounded-full mr-2"></span> Projects</h2>
+                      <div className="grid grid-cols-2 gap-4">
+                        {projects.map((proj, i) => (
+                          <div key={i} className="text-sm border border-zinc-200 p-4 rounded-2xl hover:border-orange-300 transition-colors">
+                            <div className="font-bold text-zinc-900 mb-1">
+                              {proj.name} {proj.link && <a href={proj.link} className="text-orange-500 text-xs ml-1">↗</a>}
+                            </div>
+                            <div className="leading-relaxed text-zinc-600 text-xs" dangerouslySetInnerHTML={{ __html: proj.description }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="col-span-1 space-y-8">
+                  {skills.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-zinc-900 mb-4 flex items-center"><span className="w-2 h-6 bg-pink-400 rounded-full mr-2"></span> Skills</h2>
+                      <div className="flex flex-wrap gap-2 text-sm">
+                        {skills.map((s, i) => <span key={i} className="bg-zinc-100 text-zinc-700 px-3 py-1 rounded-full font-medium">{s}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  {education.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-zinc-900 mb-4 flex items-center"><span className="w-2 h-6 bg-orange-400 rounded-full mr-2"></span> Education</h2>
+                      {education.map((edu, i) => (
+                        <div key={i} className="mb-4 text-sm bg-zinc-50 p-4 rounded-2xl">
+                          <div className="font-bold text-zinc-900">{edu.degree}</div>
+                          <div className="text-zinc-600 mt-1">{edu.school}</div>
+                          <div className="text-pink-500 font-medium text-xs mt-1">{edu.year}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
         </div>
       </div>
