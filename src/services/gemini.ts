@@ -105,7 +105,7 @@ Analyze the resume and provide:
     ];
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: {
         parts: [
           {
@@ -168,7 +168,7 @@ Format the descriptions (summary, experience description, project description) u
     const ai = getAIClient();
     
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: {
         parts: [
           {
