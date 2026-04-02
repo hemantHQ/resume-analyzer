@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, GenerateContentParameters } from '@google/genai';
 
 let aiClient: GoogleGenAI | null = null;
 
@@ -12,6 +12,37 @@ function getAIClient() {
     aiClient = new GoogleGenAI({ apiKey });
   }
   return aiClient;
+}
+
+async function generateWithRetry(request: GenerateContentParameters, maxRetries = 3) {
+  const ai = getAIClient();
+  let attempt = 0;
+  let currentModel = request.model;
+
+  while (attempt < maxRetries) {
+    try {
+      request.model = currentModel;
+      return await ai.models.generateContent(request);
+    } catch (error: any) {
+      attempt++;
+      const errorMessage = error.message || String(error);
+      const isOverloaded = errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("UNAVAILABLE");
+      const isRateLimited = errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("RESOURCE_EXHAUSTED");
+
+      if ((isOverloaded || isRateLimited) && attempt < maxRetries) {
+        // Fallback to a lighter model if the main one is overloaded
+        if (isOverloaded && currentModel === 'gemini-3-flash-preview') {
+          currentModel = 'gemini-3.1-flash-lite-preview';
+        }
+        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+        console.warn(`Gemini API Error (Attempt ${attempt}): ${errorMessage}. Retrying in ${Math.round(delay/1000)}s with model ${currentModel}...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error("Failed after multiple retries due to high API demand.");
 }
 
 export interface AnalysisResult {
@@ -46,8 +77,6 @@ Analyze the resume and provide:
 10. Tell which websites or job boards are best to apply for based on this resume (provide name, url, and reason).`;
 
   try {
-    const ai = getAIClient();
-    
     const schemaProperties: any = {
       score: { type: Type.NUMBER, description: "Overall match score out of 100" },
       detectedSkills: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Skills detected in the resume" },
@@ -104,7 +133,7 @@ Analyze the resume and provide:
       "sectionScores", "atsCompatibility", "bestWebsitesToApply"
     ];
 
-    const response = await ai.models.generateContent({
+    const response = await generateWithRetry({
       model: 'gemini-3-flash-preview',
       contents: {
         parts: [
@@ -165,9 +194,7 @@ For any missing fields (like profession or phone), leave them empty or infer a r
 Format the descriptions (summary, experience description, project description) using basic HTML tags like <b>, <i>, <u>, and <ul>/<li> for bullet points.`;
 
   try {
-    const ai = getAIClient();
-    
-    const response = await ai.models.generateContent({
+    const response = await generateWithRetry({
       model: 'gemini-3-flash-preview',
       contents: {
         parts: [
