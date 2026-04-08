@@ -87,31 +87,46 @@ function RichInput({ value, onChange }: { value: string, onChange: (v: string) =
   );
 }
 
+const getInitialState = () => {
+  try {
+    const saved = localStorage.getItem('resumeBuilderState');
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return {};
+};
+
 export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeData | null }) {
   const resumeRef = useRef<HTMLDivElement>(null);
 
-  const [template, setTemplate] = useState<'modern' | 'simple' | 'professional' | 'minimal' | 'classic' | 'elegant' | 'creative' | 'executive' | 'tech' | 'startup'>('professional');
-  const [name, setName] = useState('John Doe');
-  const [profession, setProfession] = useState('Software Engineer');
-  const [email, setEmail] = useState('john@example.com');
-  const [phone, setPhone] = useState('(555) 123-4567');
-  const [links, setLinks] = useState<LinkItem[]>([{ label: 'LinkedIn', url: 'https://linkedin.com' }]);
+  const [savedState] = useState(getInitialState);
+
+  const [template, setTemplate] = useState<'modern' | 'simple' | 'professional' | 'minimal' | 'classic' | 'elegant' | 'creative' | 'executive' | 'tech' | 'startup'>(savedState.template || 'professional');
+  const [name, setName] = useState(savedState.name || 'John Doe');
+  const [profession, setProfession] = useState(savedState.profession || 'Software Engineer');
+  const [email, setEmail] = useState(savedState.email || 'john@example.com');
+  const [phone, setPhone] = useState(savedState.phone || '(555) 123-4567');
+  const [links, setLinks] = useState<LinkItem[]>(savedState.links || [{ label: 'LinkedIn', url: 'https://linkedin.com' }]);
   
-  const [summary, setSummary] = useState('Experienced software engineer with a passion for building scalable web applications.');
+  const [summary, setSummary] = useState(savedState.summary || 'Experienced software engineer with a passion for building scalable web applications.');
   
-  const [skills, setSkills] = useState<string[]>(['JavaScript', 'React', 'Node.js', 'TypeScript']);
+  const [skills, setSkills] = useState<string[]>(savedState.skills || ['JavaScript', 'React', 'Node.js', 'TypeScript']);
   const [newSkill, setNewSkill] = useState('');
   
-  const [isFresher, setIsFresher] = useState(false);
-  const [experience, setExperience] = useState<Experience[]>([
+  const [isFresher, setIsFresher] = useState(savedState.isFresher || false);
+  const [experience, setExperience] = useState<Experience[]>(savedState.experience || [
     { company: 'Tech Corp', role: 'Senior Developer', duration: '2020 - Present', description: 'Led a team of 5 developers to build a new SaaS product.' }
   ]);
   
-  const [education, setEducation] = useState<Education[]>([
+  const [education, setEducation] = useState<Education[]>(savedState.education || [
     { school: 'University of Technology', degree: 'B.S. Computer Science', year: '2019' }
   ]);
 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>(savedState.projects || []);
+
+  useEffect(() => {
+    const stateToSave = { template, name, profession, email, phone, links, summary, skills, isFresher, experience, education, projects };
+    localStorage.setItem('resumeBuilderState', JSON.stringify(stateToSave));
+  }, [template, name, profession, email, phone, links, summary, skills, isFresher, experience, education, projects]);
 
   useEffect(() => {
     if (initialData) {
@@ -131,18 +146,7 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
   }, [initialData]);
 
   const handleDownloadPDF = () => {
-    if (!resumeRef.current) return;
-    
-    const element = resumeRef.current;
-    const opt = {
-      margin: 0,
-      filename: `${name.replace(/\s+/g, '_')}_Resume.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
-    };
-
-    html2pdf().set(opt).from(element).save();
+    window.print();
   };
 
   const addLink = () => { if (links.length < 5) setLinks([...links, { label: '', url: '' }]); };
@@ -447,8 +451,9 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
 
       {/* Right Column: Preview (A4 Size) */}
       <div className="glass-card p-2 sm:p-4 rounded-3xl overflow-auto custom-scrollbar flex justify-start sm:justify-center h-[60vh] lg:h-[80vh] items-start">
-        <div className="origin-top-left sm:origin-top transform max-[400px]:scale-[0.35] scale-[0.45] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.6] xl:scale-[0.75] transition-all duration-300" style={{ marginBottom: '-50%' }}>
+        <div id="resume-preview-container" className="origin-top-left sm:origin-top transform max-[400px]:scale-[0.35] scale-[0.45] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.6] xl:scale-[0.75] transition-all duration-300" style={{ marginBottom: '-50%' }}>
           <div 
+            id="resume-preview"
             ref={resumeRef} 
             className="bg-white shadow-xl flex-shrink-0 text-left"
             style={{ width: '210mm', minHeight: '297mm', padding: '20mm', boxSizing: 'border-box' }}
