@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Download, Plus, Trash2, Bold, Italic, Underline, LayoutTemplate, XCircle } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
+import { useReactToPrint } from 'react-to-print';
 import { motion, AnimatePresence } from 'motion/react';
 
 import { ImprovedResumeData } from '../services/gemini';
@@ -145,26 +145,13 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
     }
   }, [initialData]);
 
+  const handlePrint = useReactToPrint({
+    contentRef: resumeRef,
+    documentTitle: `${name.replace(/\s+/g, '_')}_Resume`,
+  });
+
   const handleDownloadPDF = () => {
-    const html = document.documentElement;
-    const wasDark = html.classList.contains('dark');
-    
-    if (wasDark) {
-      html.classList.remove('dark');
-    }
-    
-    setTimeout(() => {
-      window.print();
-    }, 50);
-    
-    const handleAfterPrint = () => {
-      if (wasDark) {
-        html.classList.add('dark');
-      }
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-    
-    window.addEventListener('afterprint', handleAfterPrint);
+    handlePrint();
   };
 
   const addLink = () => { if (links.length < 5) setLinks([...links, { label: '', url: '' }]); };
@@ -208,9 +195,9 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
   const removeProject = (index: number) => setProjects(projects.filter((_, i) => i !== index));
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto h-full">
       {/* Left Column: Editor */}
-      <div className="space-y-6 glass-card px-4 sm:px-6 pb-4 sm:pb-6 pt-0 rounded-3xl h-[60vh] lg:h-[80vh] overflow-y-auto custom-scrollbar transition-colors duration-200">
+      <div className="lg:col-span-5 space-y-6 glass-card px-4 sm:px-6 pb-4 sm:pb-6 pt-0 rounded-3xl h-[60vh] lg:h-[80vh] overflow-y-auto custom-scrollbar transition-colors duration-200">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center sticky top-0 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md pt-4 sm:pt-6 pb-4 z-10 border-b border-zinc-200/50 dark:border-zinc-700/50 gap-4 -mx-4 sm:-mx-6 px-4 sm:px-6">
           <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Resume Builder</h2>
           <motion.button
@@ -468,14 +455,15 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
       </div>
 
       {/* Right Column: Preview (A4 Size) */}
-      <div className="glass-card p-2 sm:p-4 rounded-3xl overflow-auto custom-scrollbar flex justify-start sm:justify-center h-[60vh] lg:h-[80vh] items-start">
-        <div id="resume-preview-container" className="origin-top-left sm:origin-top transform max-[400px]:scale-[0.35] scale-[0.45] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.6] xl:scale-[0.75] transition-all duration-300" style={{ marginBottom: '-50%' }}>
-          <div 
-            id="resume-preview"
-            ref={resumeRef} 
-            className="bg-white shadow-xl flex-shrink-0 text-left text-zinc-900"
-            style={{ width: '210mm', minHeight: '297mm', padding: '20mm', boxSizing: 'border-box' }}
-          >
+      <div className="lg:col-span-7 glass-card p-2 sm:p-4 rounded-3xl overflow-hidden flex justify-center h-[60vh] lg:h-[80vh] items-start bg-zinc-100/50 dark:bg-zinc-900/50">
+        <div className="w-full h-full overflow-y-auto custom-scrollbar flex justify-center items-start">
+          <div id="resume-preview-container" className="origin-top transform scale-[0.45] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.55] xl:scale-[0.65] transition-all duration-300" style={{ marginBottom: '-40%' }}>
+            <div 
+              id="resume-preview"
+              ref={resumeRef} 
+              className="bg-white shadow-xl flex-shrink-0 text-left text-zinc-900"
+              style={{ width: '210mm', minHeight: '297mm', padding: '20mm', boxSizing: 'border-box', backgroundColor: '#ffffff' }}
+            >
           {template === 'simple' && (
             <div className="text-zinc-900 font-sans">
               <div className="text-center mb-6 border-b-2 border-zinc-800 pb-4">
@@ -1257,6 +1245,7 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
             </div>
           )}
 
+        </div>
         </div>
         </div>
       </div>
