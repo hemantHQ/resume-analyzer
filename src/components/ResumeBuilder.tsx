@@ -479,13 +479,13 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
       </div>
 
       {/* Right Column: Preview (A4 Size) */}
-      <div className="lg:col-span-7 glass-card p-2 sm:p-4 rounded-3xl overflow-hidden flex justify-center h-[60vh] lg:h-[80vh] items-start bg-zinc-100/50 dark:bg-zinc-900/50 print:block print:w-full print:h-auto print:p-0 print:m-0 print:bg-transparent print:border-none print:shadow-none print:overflow-visible">
-        <div className="w-full h-full overflow-y-auto custom-scrollbar flex justify-center items-start print:overflow-visible print:h-auto print:block">
-          <div id="resume-preview-container" className="origin-top transform scale-[0.45] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.55] xl:scale-[0.65] transition-all duration-300 print:transform-none print:scale-100 print:translate-x-0 print:translate-y-0 print:m-0" style={{ marginBottom: '-40%' }}>
+      <div className="lg:col-span-7 glass-card p-2 sm:p-4 rounded-3xl overflow-hidden flex justify-center h-[60vh] lg:h-[80vh] items-start bg-zinc-100/50 dark:bg-zinc-900/50 print:block print:w-[210mm] print:h-[297mm] print:p-0 print:m-0 print:bg-transparent print:border-none print:shadow-none print:overflow-hidden">
+        <div className="w-full h-full overflow-y-auto custom-scrollbar flex justify-center items-start print:overflow-hidden print:w-[210mm] print:h-[297mm] print:block">
+          <div id="resume-preview-container" className="origin-top transform scale-[0.45] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.55] xl:scale-[0.65] transition-all duration-300 print:transform-none print:scale-100 print:translate-x-0 print:translate-y-0 print:m-0 print:w-[210mm] print:h-[297mm] print:overflow-hidden" style={{ marginBottom: '-40%' }}>
             <div 
               id="resume-preview"
               ref={resumeRef} 
-              className="bg-white shadow-xl flex-shrink-0 text-left text-zinc-900 overflow-hidden"
+              className="bg-white shadow-xl flex-shrink-0 text-left text-zinc-900 overflow-hidden print:w-[210mm] print:h-[297mm] print:overflow-hidden"
               style={{ width: '210mm', minHeight: '297mm', padding: '20mm', boxSizing: 'border-box', backgroundColor: '#ffffff' }}
             >
               <div style={{ transform: `scale(${contentScale / 100})`, transformOrigin: 'top left', width: `${100 / (contentScale / 100)}%` }}>

@@ -82,9 +82,11 @@ body {
   html, body {
     width: 210mm;
     height: 297mm;
+    max-height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
+    overflow: hidden !important;
   }
 
   /* Force all parents of the preview to be block and visible */
@@ -95,10 +97,11 @@ body {
   .grid {
     display: block !important;
     width: 100% !important;
-    height: auto !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     transform: none !important;
   }
 
@@ -111,14 +114,21 @@ body {
     padding: 0 !important;
     width: 210mm !important;
     height: 297mm !important;
+    max-height: 297mm !important;
     box-shadow: none !important;
+    overflow: hidden !important;
   }
 
   #resume-preview {
     width: 210mm !important;
     height: 297mm !important;
     min-height: 297mm !important;
+    max-height: 297mm !important;
     margin: 0 !important;
     box-shadow: none !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
   }
 }

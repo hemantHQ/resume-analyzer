@@ -83,7 +83,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-emerald-100 dark:selection:bg-emerald-900/50 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-300 relative overflow-x-hidden print:overflow-visible print:bg-white print:block print:w-full print:h-auto print:m-0 print:p-0">
+    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-emerald-100 dark:selection:bg-emerald-900/50 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-300 relative overflow-x-hidden print:overflow-hidden print:bg-white print:block print:w-[210mm] print:h-[297mm] print:m-0 print:p-0">
       {/* Modern Background Elements */}
       <div className="fixed inset-0 z-0 pointer-events-none print:hidden">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-400/20 dark:bg-emerald-600/10 blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
@@ -152,7 +152,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-12 print:p-0 print:m-0 print:max-w-none">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-12 print:p-0 print:m-0 print:max-w-none print:w-[210mm] print:h-[297mm] print:overflow-hidden">
         <AnimatePresence mode="wait">
           {activeTab === 'builder' ? (
             <motion.div
