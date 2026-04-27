@@ -1,4 +1,4 @@
-# 🚀 AI-Powered Resume Analyzer & Builder
+# 🚀 Resume Analyzer & Builder
 
 An intelligent, modern web application that leverages Google's Gemini AI to analyze resumes, match them against job descriptions, and provide actionable feedback. The platform is completely free and open-source, offering advanced ATS scoring, AI-powered rewrites, and a PDF resume builder for all users.
 
