@@ -39,7 +39,7 @@ jobs:
           # ADD YOUR ENVIRONMENT VARIABLES HERE
           # They must be added to GitHub Repository Secrets first (Settings > Secrets and variables > Actions)
           # Example:
-          VITE_GEMINI_API_KEY: ${{ secrets.VITE_API_KEY }}
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           # VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           NODE_ENV: production
           
