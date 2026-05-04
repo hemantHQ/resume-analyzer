@@ -60,19 +60,25 @@ export interface AnalysisResult {
 
 export async function analyzeResume(
   fileBase64: string,
-  mimeType: string
+  mimeType: string,
+  targetRole?: string
 ): Promise<AnalysisResult> {
+  const roleContext = targetRole 
+    ? `The candidate is targeting a "${targetRole}" role. Tailor your analysis, missing skills, match percentage, and suggestions specifically for a ${targetRole} position.` 
+    : `Provide a general analysis.`;
+
   const prompt = `You are an expert technical recruiter and resume analyzer.
 I have attached a candidate's resume.
-Analyze the resume and provide:
+${roleContext}
+Deeply analyze the resume and evaluate provided project links (like GitHub, live demos, or portfolios) as part of your assessment. Provide:
 1. An overall resume quality score (0-100).
 2. An industry match percentage (how well it fits standard industry expectations).
 3. A list of detected skills in the resume.
 4. A list of recommended missing skills (critical skills that are typically expected but missing).
 5. A list of extracted keywords from the resume.
-6. Basic suggestions for improvement.
+6. Basic suggestions for improvement (including feedback strictly on their project links or lack thereof).
 7. Advanced AI suggestions (rewrite/improve content), providing the section, original text, and improved text.
-8. Section-wise scoring (e.g., Experience, Education, Skills) with a score (0-100) and feedback for each.
+8. Section-wise scoring (e.g., Experience, Education, Skills, Projects) with a score (0-100) and feedback for each.
 9. ATS compatibility check with a score (0-100), feedback, and a list of issues.
 10. Tell which websites or job boards are best to apply for based on this resume (provide name, url, and reason).`;
 
@@ -184,11 +190,18 @@ export interface ImprovedResumeData {
 
 export async function extractAndImproveResume(
   fileBase64: string,
-  mimeType: string
+  mimeType: string,
+  targetRole?: string
 ): Promise<ImprovedResumeData> {
+  const roleContext = targetRole 
+    ? `The candidate is targeting a "${targetRole}" role. Tailor the rewritten summary, experience, and projects to highlight skills and achievements highly relevant to a ${targetRole} position.` 
+    : `Tailor the rewritten summary, experience descriptions, and project descriptions to be highly impactful, ATS-friendly, and results-oriented.`;
+
   const prompt = `You are an expert technical recruiter and resume writer.
 I have attached a candidate's resume.
-Extract the information from this resume and rewrite the professional summary, experience descriptions, and project descriptions to be highly impactful, ATS-friendly, and results-oriented. Use strong action verbs, quantify achievements where possible, and ensure the tone is highly professional to guarantee a high resume score.
+Extract the information from this resume.
+${roleContext}
+Use strong action verbs, quantify achievements where possible, and ensure the tone is highly professional to guarantee a high resume score.
 Return a JSON object with the extracted and improved data.
 For any missing fields (like profession or phone), leave them empty or infer a reasonable default.
 Format the descriptions (summary, experience description, project description) using basic HTML tags like <b>, <i>, <u>, and <ul>/<li> for bullet points.`;

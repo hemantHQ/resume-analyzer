@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileUpload } from './components/FileUpload';
 import { analyzeResume, AnalysisResult, extractAndImproveResume, ImprovedResumeData } from './services/gemini';
 import { Briefcase, CheckCircle2, XCircle, AlertCircle, Loader2, FileText, Sparkles, LayoutDashboard, FileCheck, PenTool, Globe, FileEdit, Info } from 'lucide-react';
@@ -16,6 +16,21 @@ export default function App() {
   const [showInfo, setShowInfo] = useState(false);
   const [isImproving, setIsImproving] = useState(false);
   const [improvedResumeData, setImprovedResumeData] = useState<ImprovedResumeData | null>(null);
+  const [targetRole, setTargetRole] = useState('');
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isAnalyzing || isImproving) {
+      setElapsedTime(0);
+      interval = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isAnalyzing, isImproving]);
 
   const handleAnalyze = async () => {
     if (!file) {
@@ -33,7 +48,7 @@ export default function App() {
       reader.onload = async () => {
         try {
           const base64String = (reader.result as string).split(',')[1];
-          const analysis = await analyzeResume(base64String, file.type);
+          const analysis = await analyzeResume(base64String, file.type, targetRole);
           setResult(analysis);
         } catch (err: any) {
           setError(err.message || 'Failed to analyze resume. Please try again.');
@@ -63,7 +78,7 @@ export default function App() {
       reader.onload = async () => {
         try {
           const base64String = (reader.result as string).split(',')[1];
-          const improvedData = await extractAndImproveResume(base64String, file.type);
+          const improvedData = await extractAndImproveResume(base64String, file.type, targetRole);
           setImprovedResumeData(improvedData);
           setActiveTab('builder');
         } catch (err: any) {
@@ -187,6 +202,19 @@ export default function App() {
                   
                   <FileUpload onFileSelect={setFile} selectedFile={file} />
                   
+                  <div className="mt-6">
+                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                      Target Role / Profile (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={targetRole}
+                      onChange={(e) => setTargetRole(e.target.value)}
+                      placeholder="e.g. Frontend Developer, Data Scientist"
+                      className="w-full px-4 py-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700/50 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all text-zinc-900 dark:text-zinc-100"
+                    />
+                  </div>
+
                   <div className="mt-8">
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -196,10 +224,15 @@ export default function App() {
                       className="w-full py-4 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl font-semibold shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center group"
                     >
                       {isAnalyzing ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                          Analyzing with AI...
-                        </>
+                        <div className="flex flex-col items-center">
+                          <div className="flex items-center">
+                            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                            Analyzing with AI...
+                          </div>
+                          <span className="text-xs text-emerald-100 mt-1 opacity-80">
+                            Estimated time: ~15s (Elapsed: {elapsedTime}s)
+                          </span>
+                        </div>
                       ) : (
                         <>
                           <Sparkles className="w-5 h-5 mr-3 group-hover:animate-pulse" />
@@ -309,10 +342,15 @@ export default function App() {
                               className="inline-flex items-center justify-center px-8 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 rounded-2xl text-sm font-bold transition-all shadow-xl hover:shadow-2xl disabled:opacity-70"
                             >
                               {isImproving ? (
-                                <>
-                                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                                  Improving Resume...
-                                </>
+                                <div className="flex flex-col items-center">
+                                  <div className="flex items-center">
+                                    <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                                    Improving Resume...
+                                  </div>
+                                  <span className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                                    Estimated time: ~20s (Elapsed: {elapsedTime}s)
+                                  </span>
+                                </div>
                               ) : (
                                 <>
                                   <Sparkles className="w-5 h-5 mr-3" />
