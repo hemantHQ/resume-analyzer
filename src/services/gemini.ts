@@ -31,8 +31,8 @@ async function generateWithRetry(request: GenerateContentParameters, maxRetries 
 
       if ((isOverloaded || isRateLimited) && attempt < maxRetries) {
         // Fallback to a lighter model if the main one is overloaded
-        if (isOverloaded && currentModel === 'gemini-3-flash-preview') {
-          currentModel = 'gemini-3.1-flash-lite-preview';
+        if (isOverloaded && currentModel === 'gemini-2.5-flash') {
+          currentModel = 'gemini-1.5-flash';
         }
         const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
         console.warn(`Gemini API Error (Attempt ${attempt}): ${errorMessage}. Retrying in ${Math.round(delay/1000)}s with model ${currentModel}...`);
@@ -46,6 +46,7 @@ async function generateWithRetry(request: GenerateContentParameters, maxRetries 
 }
 
 export interface AnalysisResult {
+  inferredRole?: string;
   score: number;
   detectedSkills: string[];
   extractedKeywords: string[];
@@ -65,7 +66,7 @@ export async function analyzeResume(
 ): Promise<AnalysisResult> {
   const roleContext = targetRole 
     ? `The candidate is targeting a "${targetRole}" role. Tailor your analysis, missing skills, match percentage, and suggestions specifically for a ${targetRole} position.` 
-    : `Provide a general analysis.`;
+    : `The candidate has not provided a target role. Please INFER their most likely target profile (e.g., Frontend Developer, Data Analyst) based on their experience and skills, and base your analysis, missing skills, search keywords, and industry match on that inferred role.`;
 
   const prompt = `You are an expert technical recruiter and resume analyzer.
 I have attached a candidate's resume.
@@ -74,16 +75,18 @@ Deeply analyze the resume and evaluate provided project links (like GitHub, live
 1. An overall resume quality score (0-100).
 2. An industry match percentage (how well it fits standard industry expectations).
 3. A list of detected skills in the resume.
-4. A list of recommended missing skills (critical skills that are typically expected but missing).
+4. A list of recommended missing skills (critical skills that are typically expected for this profile/target role, but are missing).
 5. A list of extracted keywords from the resume.
 6. Basic suggestions for improvement (including feedback strictly on their project links or lack thereof).
 7. Advanced AI suggestions (rewrite/improve content), providing the section, original text, and improved text.
 8. Section-wise scoring (e.g., Experience, Education, Skills, Projects) with a score (0-100) and feedback for each.
 9. ATS compatibility check with a score (0-100), feedback, and a list of issues.
-10. Tell which websites or job boards are best to apply for based on this resume (provide name, url, and reason).`;
+10. Tell which websites or job boards are best to apply for based on this resume (provide name, url, and reason).
+11. If the target role was NOT provided, tell me the exact inferred role.`;
 
   try {
     const schemaProperties: any = {
+      inferredRole: { type: Type.STRING, description: "The inferred target role if not provided. Leave empty if provided." },
       score: { type: Type.NUMBER, description: "Overall match score out of 100" },
       detectedSkills: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Skills detected in the resume" },
       extractedKeywords: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Keywords extracted from the resume" },
@@ -140,7 +143,7 @@ Deeply analyze the resume and evaluate provided project links (like GitHub, live
     ];
 
     const response = await generateWithRetry({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.5-flash',
       contents: {
         parts: [
           {
@@ -191,24 +194,33 @@ export interface ImprovedResumeData {
 export async function extractAndImproveResume(
   fileBase64: string,
   mimeType: string,
-  targetRole?: string
+  targetRole?: string,
+  analysisData?: AnalysisResult | null
 ): Promise<ImprovedResumeData> {
   const roleContext = targetRole 
     ? `The candidate is targeting a "${targetRole}" role. Tailor the rewritten summary, experience, and projects to highlight skills and achievements highly relevant to a ${targetRole} position.` 
-    : `Tailor the rewritten summary, experience descriptions, and project descriptions to be highly impactful, ATS-friendly, and results-oriented.`;
+    : `The candidate has not provided a target role. Please INFER their most likely target profile based on their resume. Tailor the rewritten summary, experience descriptions, and project descriptions to be highly impactful, ATS-friendly, and results-oriented for that inferred role.`;
+
+  const analysisContext = analysisData 
+    ? `\nHere is a prior analysis of their resume:\n${JSON.stringify(analysisData)}\nUse this analysis to identify weak points and drastically improve them. Address missing skills by seamlessly inferring how they map to past experiences (if realistic).`
+    : ``;
 
   const prompt = `You are an expert technical recruiter and resume writer.
 I have attached a candidate's resume.
 Extract the information from this resume.
-${roleContext}
-Use strong action verbs, quantify achievements where possible, and ensure the tone is highly professional to guarantee a high resume score.
-Return a JSON object with the extracted and improved data.
-For any missing fields (like profession or phone), leave them empty or infer a reasonable default.
-Format the descriptions (summary, experience description, project description) using basic HTML tags like <b>, <i>, <u>, and <ul>/<li> for bullet points.`;
+${roleContext}${analysisContext}
+You correspond to an "Auto Improve AI" feature. Your job is to fundamentally upgrade this resume.
+RULES:
+1. Cut out completely irrelevant experiences, projects, or outdated skills that do not fit the target role.
+2. Rewrite the remaining bullet points to be highly impactful, quantifying achievements (e.g. increase performance by X%) and using strong action verbs.
+3. If the analysis points out missing skills, intelligently integrate them into the summary or experience bullet points if it's realistic for their role.
+4. Format the descriptions (summary, experience description, project description) using basic HTML tags like <b>, <i>, <u>, and <ul>/<li> for bullet points.
+Return a JSON object with the extracted and aggressively improved data.
+For any missing fields (like profession or phone), leave them empty or infer a reasonable default based on context.`;
 
   try {
     const response = await generateWithRetry({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.5-flash',
       contents: {
         parts: [
           {

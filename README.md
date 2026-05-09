@@ -1,4 +1,4 @@
-# 🚀 AI Resume Analyzer & Builder
+# 🚀 AI-Powered Resume Analyzer & Builder
 
 An intelligent, modern web application that leverages Google's Gemini AI to analyze resumes, match them against job descriptions, and provide actionable feedback. The platform is completely free and open-source, offering advanced ATS scoring, AI-powered rewrites, and a PDF resume builder for all users.
 
@@ -37,8 +37,8 @@ This application is built using modern web technologies. The primary programming
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/hemantHQ/Resume-Analyzer.git
-    cd Resume-Analyzer
+    git clone https://github.com/yourusername/resume-analyzer.git
+    cd resume-analyzer
     ```
 
 2.  **Install dependencies:**
@@ -59,3 +59,21 @@ This application is built using modern web technologies. The primary programming
 
 5.  **Open your browser:**
     Navigate to `http://localhost:3000`
+
+## 📦 Deployment (GitHub Pages)
+
+This project is configured for easy deployment to GitHub Pages using GitHub Actions.
+
+1.  **Fork or clone** this repository to your GitHub account.
+2.  **Add your Gemini API Key as a Secret:**
+    *   Go to your repository's **Settings** > **Secrets and variables** > **Actions**.
+    *   Click **New repository secret**.
+    *   Name: `VITE_GEMINI_API_KEY`
+    *   Secret: Your actual Gemini API key.
+3.  **Enable GitHub Pages:**
+    *   Go to **Settings** > **Pages**.
+    *   Under **Source**, select **GitHub Actions**.
+4.  **Trigger the Deployment:**
+    *   Any push to the `main` branch will automatically trigger the deployment workflow (`.github/workflows/deploy.yml`).
+    *   You can also manually trigger it from the **Actions** tab.
+5.  **Access your site:** Once the workflow completes, your site will be live at your GitHub Pages URL (e.g., `https://yourusername.github.io/resume-analyzer/`).

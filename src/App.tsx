@@ -78,7 +78,7 @@ export default function App() {
       reader.onload = async () => {
         try {
           const base64String = (reader.result as string).split(',')[1];
-          const improvedData = await extractAndImproveResume(base64String, file.type, targetRole);
+          const improvedData = await extractAndImproveResume(base64String, file.type, targetRole || result?.inferredRole, result);
           setImprovedResumeData(improvedData);
           setActiveTab('builder');
         } catch (err: any) {
@@ -286,6 +286,12 @@ export default function App() {
                         className="glass-card rounded-3xl p-8 text-center relative overflow-hidden"
                       >
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-pink-500"></div>
+                        <div className="mb-4">
+                           <span className="text-xs font-bold px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-zinc-500 dark:text-zinc-400">
+                             Target Profile: <strong className="text-zinc-900 dark:text-white">{targetRole || result.inferredRole || 'Not specified'}</strong>
+                             {!targetRole && result.inferredRole && ' (Inferred)'}
+                           </span>
+                        </div>
                         <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-6">Overall Match Score</h3>
                         <div className="flex justify-center items-center">
                           <div className="relative">

@@ -124,6 +124,8 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
 
   const [projects, setProjects] = useState<Project[]>(savedState.projects || []);
   const [contentScale, setContentScale] = useState(savedState.contentScale || 100);
+  const innerRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     const stateToSave = { template, name, profession, email, phone, links, summary, skills, isFresher, experience, education, projects, contentScale };
@@ -479,16 +481,32 @@ export function ResumeBuilder({ initialData }: { initialData?: ImprovedResumeDat
       </div>
 
       {/* Right Column: Preview (A4 Size) */}
-      <div className="lg:col-span-7 glass-card p-2 sm:p-4 rounded-3xl overflow-hidden flex justify-center h-[60vh] lg:h-[80vh] items-start bg-zinc-100/50 dark:bg-zinc-900/50 print:block print:w-[210mm] print:h-[297mm] print:p-0 print:m-0 print:bg-transparent print:border-none print:shadow-none print:overflow-hidden">
-        <div className="w-full h-full overflow-y-auto custom-scrollbar flex justify-center items-start print:overflow-hidden print:w-[210mm] print:h-[297mm] print:block">
-          <div id="resume-preview-container" className="origin-top transform scale-[0.45] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.55] xl:scale-[0.65] transition-all duration-300 print:transform-none print:scale-100 print:translate-x-0 print:translate-y-0 print:m-0 print:w-[210mm] print:h-[297mm] print:overflow-hidden" style={{ marginBottom: '-40%' }}>
+      <div className="lg:col-span-7 glass-card p-2 sm:p-4 rounded-3xl overflow-hidden flex justify-center h-[60vh] lg:h-[80vh] items-start bg-zinc-100/50 dark:bg-zinc-900/50 print:block print:w-[210mm] print:h-auto print:p-0 print:m-0 print:bg-transparent print:border-none print:shadow-none print:overflow-visible">
+        <div className="w-full h-full overflow-y-auto custom-scrollbar flex justify-center items-start print:overflow-visible print:w-[210mm] print:h-auto print:block">
+          <div id="resume-preview-container" className="origin-top transform scale-[0.45] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.55] xl:scale-[0.65] transition-all duration-300 print:transform-none print:scale-100 print:translate-x-0 print:translate-y-0 print:m-0 print:w-[210mm] print:overflow-visible" style={{ marginBottom: '-40%' }}>
             <div 
               id="resume-preview"
               ref={resumeRef} 
-              className="bg-white shadow-xl flex-shrink-0 text-left text-zinc-900 overflow-hidden print:w-[210mm] print:h-[297mm] print:overflow-hidden"
-              style={{ width: '210mm', minHeight: '297mm', padding: '20mm', boxSizing: 'border-box', backgroundColor: '#ffffff' }}
+              className="bg-white shadow-xl flex-shrink-0 text-left text-zinc-900 print:w-[210mm] print:overflow-visible relative overflow-hidden"
+              style={{ 
+                width: '210mm', 
+                minHeight: '297mm', 
+                padding: '20mm', 
+                boxSizing: 'border-box', 
+                backgroundColor: '#ffffff', 
+                height: 'max-content',
+              }}
             >
-              <div style={{ transform: `scale(${contentScale / 100})`, transformOrigin: 'top left', width: `${100 / (contentScale / 100)}%` }}>
+              {/* Page Boundaries Visualizer for Preview (Hidden in print) */}
+              <div className="absolute top-0 left-0 w-full h-full pointer-events-none print:hidden flex flex-col overflow-hidden z-50">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className="w-full relative flex-shrink-0" style={{ height: '297mm', borderBottom: '2px dashed #94a3b8' }}>
+                    <span className="absolute bottom-1 right-2 text-[10px] text-slate-400 font-mono bg-white/80 px-1 rounded">Page {i + 1} End</span>
+                  </div>
+                ))}
+              </div>
+
+              <div ref={innerRef} className="relative z-10" style={{ zoom: contentScale / 100 }}>
           {template === 'simple' && (
             <div className="text-zinc-900 font-sans">
               <div className="text-center mb-6 border-b-2 border-zinc-800 pb-4">
